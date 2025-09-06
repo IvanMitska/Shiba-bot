@@ -5,7 +5,6 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
-const session = require('express-session');
 const logger = require('../utils/logger');
 
 const trackingRoutes = require('./routes/tracking');
@@ -53,20 +52,6 @@ class WebApp {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
     
-    // Simple session middleware for production
-    this.app.use(session({
-      secret: process.env.JWT_SECRET || 'your-secret-key',
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        secure: process.env.NODE_ENV === 'production',
-        httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000,
-        sameSite: 'lax'
-      },
-      name: 'sessionId'
-    }));
-    
     const limiter = rateLimit({
       windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 60000,
       max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
@@ -84,22 +69,33 @@ class WebApp {
   }
   
   setupRoutes() {
-    // Главная страница
+    // Health check endpoint - MUST be first for Railway
+    this.app.get('/health', (req, res) => {
+      res.json({ 
+        status: 'ok', 
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        service: 'shibo-cars-bot'
+      });
+    });
+    
+    // Root endpoint
     this.app.get('/', (req, res) => {
-      res.sendFile(path.join(__dirname, '../../test-page.html'));
+      res.json({
+        name: 'Shibo Cars Partner Bot',
+        status: 'running',
+        endpoints: {
+          health: '/health',
+          tracking: '/r/:code',
+          api: '/api/*',
+          webhook: '/webhook'
+        }
+      });
     });
     
     this.app.use('/', trackingRoutes);
     this.app.use('/api', apiRoutes);
     this.app.use('/api/admin', adminRoutes);
-    
-    this.app.get('/health', (req, res) => {
-      res.json({ 
-        status: 'ok', 
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime()
-      });
-    });
     
     this.app.get('/webapp/*', (req, res) => {
       res.sendFile(path.join(__dirname, '../../webapp/build/index.html'));

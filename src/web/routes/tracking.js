@@ -11,14 +11,13 @@ router.get('/r/:code', async (req, res) => {
     const ip = getClientIP(req);
     const userAgent = req.headers['user-agent'] || '';
     const referer = req.headers['referer'] || '';
-    const sessionId = req.session?.id || null;
     
     const trackingData = {
       ip,
       userAgent,
       referer,
       query: req.query,
-      sessionId
+      sessionId: null // We don't use sessions anymore
     };
     
     const result = await trackingService.trackClick(code, trackingData);
