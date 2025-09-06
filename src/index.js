@@ -21,8 +21,15 @@ async function startApplication() {
     logger.info('Initializing Telegram bot...');
     const bot = new PartnerBot(process.env.BOT_TOKEN);
     
-    if (process.env.WEBHOOK_URL) {
-      // Webhook mode for production
+    // In production on Railway, use webhook
+    if (process.env.NODE_ENV === 'production' && process.env.RAILWAY_PUBLIC_DOMAIN) {
+      const webhookUrl = `https://${process.env.RAILWAY_PUBLIC_DOMAIN}/webhook`;
+      logger.info(`Setting up webhook mode: ${webhookUrl}`);
+      const app = webApp.getExpressApp();
+      app.use('/webhook', bot.getWebhookCallback());
+      await bot.launch(webhookUrl);
+    } else if (process.env.WEBHOOK_URL) {
+      // Custom webhook URL
       logger.info('Setting up webhook mode...');
       const app = webApp.getExpressApp();
       app.use('/webhook', bot.getWebhookCallback());

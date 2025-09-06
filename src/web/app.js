@@ -53,15 +53,18 @@ class WebApp {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
     
+    // Simple session middleware for production
     this.app.use(session({
       secret: process.env.JWT_SECRET || 'your-secret-key',
       resave: false,
-      saveUninitialized: true,
+      saveUninitialized: false,
       cookie: {
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000
-      }
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: 'lax'
+      },
+      name: 'sessionId'
     }));
     
     const limiter = rateLimit({
