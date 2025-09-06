@@ -1,0 +1,17 @@
+[build]
+  # Указываем директорию с React приложением
+  base = "webapp"
+  # Команда для сборки
+  command = "npm run build"
+  # Папка с собранным приложением
+  publish = "build"
+
+# Настройка для SPA роутинга
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[build.environment]
+  # Переменные окружения для сборки
+  REACT_APP_API_URL = "https://your-backend-domain.com/api"
