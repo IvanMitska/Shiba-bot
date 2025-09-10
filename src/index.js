@@ -4,7 +4,6 @@ const { Telegraf } = require('telegraf');
 const { syncDatabase } = require('./database/models');
 const { Partner } = require('./database/models');
 const { formatPartnerStats } = require('./bot/utils');
-const WebApp = require('./web/app');
 const logger = require('./utils/logger');
 
 // Enable console logging in production for Railway
@@ -26,26 +25,81 @@ async function startApplication() {
     await syncDatabase(process.env.NODE_ENV === 'development');
     console.log('✅ Database initialized');
     
-    // Create Express app through WebApp
-    const webApp = new WebApp();
-    const app = webApp.getExpressApp();
+    // Create Express app directly
+    const app = express();
     const port = process.env.PORT || 3000;
     
-    // Add test endpoint
-    app.get('/test-bot', async (req, res) => {
-      try {
-        const botInfo = await bot.telegram.getMe();
-        res.json({
-          status: 'Bot is running',
-          bot: botInfo,
-          webhook: webhookUrl || 'Not set'
-        });
-      } catch (error) {
-        res.json({
-          status: 'Bot error',
-          error: error.message
-        });
-      }
+    // Import middleware from WebApp
+    const cors = require('cors');
+    const helmet = require('helmet');
+    const morgan = require('morgan');
+    const compression = require('compression');
+    const rateLimit = require('express-rate-limit');
+    
+    // Setup middleware
+    app.use(helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", "https://telegram.org"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", "data:", "https:"],
+          connectSrc: ["'self'"],
+          fontSrc: ["'self'", "data:"],
+          objectSrc: ["'none'"],
+          mediaSrc: ["'self'"],
+          frameSrc: ["'none'"],
+        },
+      },
+    }));
+    
+    app.use(compression());
+    app.use(cors({
+      origin: process.env.WEBAPP_URL || true,
+      credentials: true
+    }));
+    
+    app.use(morgan('combined', {
+      stream: {
+        write: (message) => logger.info(message.trim())
+      },
+      skip: (req) => req.url === '/health'
+    }));
+    
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+    
+    const limiter = rateLimit({
+      windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 60000,
+      max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
+      message: 'Too many requests from this IP, please try again later.'
+    });
+    
+    app.use('/api/', limiter);
+    
+    // Health check endpoint
+    app.get('/health', (req, res) => {
+      res.json({ 
+        status: 'ok', 
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        service: 'shibo-cars-bot'
+      });
+    });
+    
+    // Root endpoint
+    app.get('/', (req, res) => {
+      res.json({
+        name: 'Shibo Cars Partner Bot',
+        status: 'running',
+        endpoints: {
+          health: '/health',
+          tracking: '/r/:code',
+          api: '/api/*',
+          webhook: '/webhook',
+          'test-bot': '/test-bot'
+        }
+      });
     });
     
     let bot = null;
@@ -160,19 +214,29 @@ ${stats}
         // Setup webhook or polling
         if (process.env.NODE_ENV === 'production') {
           // Production mode - use webhook
-          const domain = process.env.APP_URL || 
-                        process.env.RAILWAY_PUBLIC_DOMAIN || 
+          const domain = process.env.RAILWAY_PUBLIC_DOMAIN || 
+                        process.env.APP_URL || 
                         'shibo-tg-backend-production.up.railway.app';
           
           webhookUrl = `https://${domain.replace('https://', '').replace('http://', '')}/webhook`;
           
           console.log('Setting up webhook:', webhookUrl);
           
-          // Register webhook endpoint
-          app.post('/webhook', (req, res) => {
-            console.log('Webhook received:', req.body?.message?.text || 'no text');
-            return bot.webhookCallback('/webhook')(req, res);
+          // CRITICAL: Register webhook endpoint BEFORE starting server
+          app.post('/webhook', async (req, res) => {
+            console.log('Webhook received from IP:', req.ip);
+            console.log('Webhook body:', JSON.stringify(req.body).substring(0, 200));
+            
+            try {
+              await bot.handleUpdate(req.body);
+              res.sendStatus(200);
+            } catch (error) {
+              console.error('Error processing webhook:', error);
+              res.sendStatus(500);
+            }
           });
+          
+          console.log('✅ Webhook endpoint registered at /webhook');
           
           // Delete old webhook and set new one
           await bot.telegram.deleteWebhook();
@@ -193,6 +257,24 @@ ${stats}
         const botInfo = await bot.telegram.getMe();
         console.log('✅ Bot connected:', `@${botInfo.username}`);
         
+        // Add test endpoint AFTER bot is initialized
+        app.get('/test-bot', async (req, res) => {
+          try {
+            const botInfo = await bot.telegram.getMe();
+            const webhookInfo = await bot.telegram.getWebhookInfo();
+            res.json({
+              status: 'Bot is running',
+              bot: botInfo,
+              webhook: webhookInfo
+            });
+          } catch (error) {
+            res.json({
+              status: 'Bot error',
+              error: error.message
+            });
+          }
+        });
+        
       } catch (error) {
         console.error('❌ Failed to start bot:', error);
         // Continue running server even if bot fails
@@ -201,11 +283,39 @@ ${stats}
       console.log('⚠️ BOT_TOKEN not provided, running without bot');
     }
     
+    // Import routes
+    const trackingRoutes = require('./web/routes/tracking');
+    const apiRoutes = require('./web/routes/api');
+    const adminRoutes = require('./web/routes/admin');
+    
+    app.use('/', trackingRoutes);
+    app.use('/api', apiRoutes);
+    app.use('/api/admin', adminRoutes);
+    
+    // 404 handler
+    app.use((req, res, next) => {
+      console.log('404 Not found:', req.method, req.url);
+      res.status(404).json({ error: 'Not found' });
+    });
+    
+    // Error handler
+    app.use((err, req, res, next) => {
+      console.error('Unhandled error:', err);
+      const status = err.status || 500;
+      const message = err.message || 'Internal server error';
+      res.status(status).json({
+        error: message,
+        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+      });
+    });
+    
     // Start server
-    const server = webApp.start(port);
-    console.log(`✅ Server running on port ${port}`);
-    console.log(`🌐 Check health: http://localhost:${port}/health`);
-    console.log(`🤖 Check bot: http://localhost:${port}/test-bot`);
+    const server = app.listen(port, () => {
+      console.log(`✅ Server running on port ${port}`);
+      console.log(`🌐 Check health: http://localhost:${port}/health`);
+      console.log(`🤖 Check bot: http://localhost:${port}/test-bot`);
+      logger.info(`Web server started on port ${port}`);
+    });
     
     // Keep process alive
     if (process.env.NODE_ENV === 'production') {
@@ -218,14 +328,14 @@ ${stats}
     process.once('SIGINT', () => {
       console.log('SIGINT received, shutting down gracefully');
       if (bot) bot.stop('SIGINT');
-      webApp.stop();
+      server.close();
       process.exit(0);
     });
     
     process.once('SIGTERM', () => {
       console.log('SIGTERM received, shutting down gracefully');
       if (bot) bot.stop('SIGTERM');
-      webApp.stop();
+      server.close();
       process.exit(0);
     });
     
