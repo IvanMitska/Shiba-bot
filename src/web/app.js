@@ -75,7 +75,10 @@ class WebApp {
         status: 'ok', 
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
-        service: 'shibo-cars-bot'
+        service: 'shibo-cars-bot',
+        bot_token_set: !!process.env.BOT_TOKEN,
+        webhook_mode: !!process.env.RAILWAY_PUBLIC_DOMAIN,
+        domain: process.env.DOMAIN
       });
     });
     
