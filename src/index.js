@@ -25,8 +25,6 @@ async function startApplication() {
     // Start web server
     const webApp = new WebApp();
     const port = process.env.PORT || 3000;
-    const server = webApp.start(port);
-    console.log(`Web server started on port ${port}`);
     
     // Start Telegram bot only if token is provided
     if (process.env.BOT_TOKEN) {
@@ -42,19 +40,30 @@ async function startApplication() {
           console.log(`Setting up webhook mode: ${webhookUrl}`);
           logger.info(`Setting up webhook mode: ${webhookUrl}`);
           const app = webApp.getExpressApp();
-          app.use('/webhook', bot.getWebhookCallback());
+          // Register webhook BEFORE starting server
+          app.post('/webhook', bot.getWebhookCallback());
+          
+          // Now start the server
+          const server = webApp.start(port);
+          console.log(`Web server started on port ${port} with webhook at /webhook`);
+          
+          // Set webhook URL in Telegram
           await bot.launch(webhookUrl);
         } else if (process.env.WEBHOOK_URL) {
           // Custom webhook URL
           console.log('Setting up custom webhook mode...');
           logger.info('Setting up webhook mode...');
           const app = webApp.getExpressApp();
-          app.use('/webhook', bot.getWebhookCallback());
+          app.post('/webhook', bot.getWebhookCallback());
+          const server = webApp.start(port);
+          console.log(`Web server started on port ${port} with webhook`);
           await bot.launch(process.env.WEBHOOK_URL);
         } else {
           // Polling mode for development
           console.log('Starting bot in polling mode...');
           logger.info('Starting bot in polling mode...');
+          const server = webApp.start(port);
+          console.log(`Web server started on port ${port}`);
           await bot.launch();
         }
         
@@ -67,6 +76,8 @@ async function startApplication() {
     } else {
       console.log('BOT_TOKEN not provided, running without Telegram bot');
       logger.warn('BOT_TOKEN not provided, running without Telegram bot');
+      const server = webApp.start(port);
+      console.log(`Web server started on port ${port} without bot`);
     }
     
     console.log('Application started successfully');
