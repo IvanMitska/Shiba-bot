@@ -164,7 +164,15 @@ ${stats}
 /start - Показать эту информацию
 /stats - Обновить статистику`;
             
-            await ctx.replyWithMarkdown(message);
+            // Добавляем инлайн кнопки
+            const { Markup } = require('telegraf');
+            const keyboard = Markup.inlineKeyboard([
+              [Markup.button.callback('📋 Копировать ссылку', 'copy_link')],
+              [Markup.button.callback('📊 Обновить статистику', 'refresh_stats')],
+              [Markup.button.url('🌐 Открыть лендинг', partnerLink)]
+            ]);
+            
+            await ctx.replyWithMarkdown(message, keyboard);
             
             console.log(`Partner ${created ? 'registered' : 'returned'}: ${telegramId}`);
           } catch (error) {
@@ -198,10 +206,88 @@ ${stats}
 
 Обновлено: ${new Date().toLocaleString('ru-RU')}`;
             
-            await ctx.replyWithMarkdown(message);
+            const { Markup } = require('telegraf');
+            const keyboard = Markup.inlineKeyboard([
+              [Markup.button.callback('📋 Копировать ссылку', 'copy_link')],
+              [Markup.button.callback('🔄 Обновить', 'refresh_stats')],
+              [Markup.button.url('🌐 Открыть лендинг', partnerLink)]
+            ]);
+            
+            await ctx.replyWithMarkdown(message, keyboard);
           } catch (error) {
             console.error('Error in /stats handler:', error);
             await ctx.reply('Произошла ошибка при получении статистики.');
+          }
+        });
+        
+        // Обработчики для инлайн кнопок
+        bot.action('copy_link', async (ctx) => {
+          console.log('Copy link action from:', ctx.from.id);
+          
+          try {
+            const partner = await Partner.findOne({ 
+              where: { telegramId: ctx.from.id } 
+            });
+            
+            if (!partner) {
+              return ctx.answerCbQuery('Ошибка: партнер не найден');
+            }
+            
+            const partnerLink = partner.getPartnerLink();
+            
+            // Отвечаем на callback query
+            await ctx.answerCbQuery('📋 Ссылка скопирована! Нажмите на нее чтобы скопировать:', { show_alert: true });
+            
+            // Отправляем ссылку отдельным сообщением для удобного копирования
+            await ctx.reply(`\`${partnerLink}\``, { parse_mode: 'Markdown' });
+          } catch (error) {
+            console.error('Error in copy_link action:', error);
+            await ctx.answerCbQuery('Произошла ошибка');
+          }
+        });
+        
+        bot.action('refresh_stats', async (ctx) => {
+          console.log('Refresh stats action from:', ctx.from.id);
+          
+          try {
+            const partner = await Partner.findOne({ 
+              where: { telegramId: ctx.from.id } 
+            });
+            
+            if (!partner) {
+              return ctx.answerCbQuery('Ошибка: партнер не найден');
+            }
+            
+            const stats = await formatPartnerStats(partner);
+            const partnerLink = partner.getPartnerLink();
+            
+            const message = `
+📊 Ваша актуальная статистика:
+
+🔗 Партнерская ссылка:
+\`${partnerLink}\`
+
+${stats}
+
+Обновлено: ${new Date().toLocaleString('ru-RU')}`;
+            
+            const { Markup } = require('telegraf');
+            const keyboard = Markup.inlineKeyboard([
+              [Markup.button.callback('📋 Копировать ссылку', 'copy_link')],
+              [Markup.button.callback('🔄 Обновить', 'refresh_stats')],
+              [Markup.button.url('🌐 Открыть лендинг', partnerLink)]
+            ]);
+            
+            // Обновляем сообщение
+            await ctx.editMessageText(message, {
+              parse_mode: 'Markdown',
+              ...keyboard
+            });
+            
+            await ctx.answerCbQuery('✅ Статистика обновлена');
+          } catch (error) {
+            console.error('Error in refresh_stats action:', error);
+            await ctx.answerCbQuery('Произошла ошибка при обновлении');
           }
         });
         
