@@ -34,9 +34,17 @@ async function startApplication() {
       try {
         const bot = new PartnerBot(process.env.BOT_TOKEN);
         
-        // In production on Railway, use webhook
-        if (process.env.NODE_ENV === 'production' && process.env.RAILWAY_PUBLIC_DOMAIN) {
-          const webhookUrl = `https://${process.env.RAILWAY_PUBLIC_DOMAIN}/webhook`;
+        // In production, use webhook
+        if (process.env.NODE_ENV === 'production') {
+          // Try different environment variables for the domain
+          const appUrl = process.env.RAILWAY_PUBLIC_DOMAIN || 
+                        process.env.RAILWAY_STATIC_URL || 
+                        process.env.APP_URL || 
+                        'shibo-tg-backend-production.up.railway.app';
+          
+          // Ensure proper format
+          const domain = appUrl.replace('https://', '').replace('http://', '').replace('/webhook', '');
+          const webhookUrl = `https://${domain}/webhook`;
           console.log(`Setting up webhook mode: ${webhookUrl}`);
           logger.info(`Setting up webhook mode: ${webhookUrl}`);
           const app = webApp.getExpressApp();
