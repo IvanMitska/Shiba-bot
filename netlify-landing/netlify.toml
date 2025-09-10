@@ -8,5 +8,5 @@
 
 [[redirects]]
   from = "/r/:code"
-  to = "/?ref=:code"
+  to = "/index.html?ref=:code"
   status = 200
