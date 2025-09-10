@@ -58,18 +58,49 @@ router.get('/r/:code', async (req, res) => {
 
 router.post('/api/redirect', async (req, res) => {
   try {
-    const { clickId, type } = req.body;
+    const { partnerCode, clickId, type } = req.body;
     
-    if (!clickId || !type) {
+    // Support both old (clickId) and new (partnerCode) methods
+    if (!type || (!clickId && !partnerCode)) {
       return res.status(400).json({ 
         success: false, 
         error: 'Missing required parameters' 
       });
     }
     
-    const success = await trackingService.trackRedirect(clickId, type);
-    
-    res.json({ success });
+    // If we have partnerCode but no clickId, create a new click
+    if (partnerCode && !clickId) {
+      const ip = getClientIP(req);
+      const userAgent = req.headers['user-agent'] || '';
+      const referer = req.headers['referer'] || '';
+      
+      const trackingData = {
+        ip,
+        userAgent,
+        referer,
+        query: req.query,
+        sessionId: null
+      };
+      
+      const result = await trackingService.trackClick(partnerCode, trackingData);
+      
+      if (!result) {
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Partner not found' 
+        });
+      }
+      
+      // Now track the redirect
+      const success = await trackingService.trackRedirect(result.click.id, type);
+      
+      logger.info(`Tracked ${type} click for partner code: ${partnerCode}`);
+      res.json({ success });
+    } else {
+      // Old method with clickId
+      const success = await trackingService.trackRedirect(clickId, type);
+      res.json({ success });
+    }
   } catch (error) {
     logger.error('Error tracking redirect:', error);
     res.status(500).json({ 
@@ -81,9 +112,35 @@ router.post('/api/redirect', async (req, res) => {
 
 router.post('/api/track-view', async (req, res) => {
   try {
-    const { clickId } = req.body;
-    logger.info(`Landing page viewed for click: ${clickId}`);
-    res.json({ success: true });
+    const { partnerCode, clickId } = req.body;
+    
+    if (partnerCode) {
+      const ip = getClientIP(req);
+      const userAgent = req.headers['user-agent'] || '';
+      const referer = req.headers['referer'] || '';
+      
+      const trackingData = {
+        ip,
+        userAgent,
+        referer,
+        query: req.query,
+        sessionId: null
+      };
+      
+      const result = await trackingService.trackClick(partnerCode, trackingData);
+      
+      if (result) {
+        logger.info(`Landing page viewed for partner: ${partnerCode}, click: ${result.click.id}`);
+        res.json({ success: true, clickId: result.click.id });
+      } else {
+        res.status(404).json({ success: false, error: 'Partner not found' });
+      }
+    } else if (clickId) {
+      logger.info(`Landing page viewed for click: ${clickId}`);
+      res.json({ success: true });
+    } else {
+      res.status(400).json({ success: false, error: 'Missing parameters' });
+    }
   } catch (error) {
     logger.error('Error tracking view:', error);
     res.status(500).json({ success: false });

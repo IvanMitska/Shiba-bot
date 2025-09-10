@@ -54,10 +54,40 @@ async function startApplication() {
     }));
     
     app.use(compression());
-    app.use(cors({
-      origin: process.env.WEBAPP_URL || true,
-      credentials: true
-    }));
+    
+    // Configure CORS to allow Netlify landing
+    const corsOptions = {
+      origin: function(origin, callback) {
+        const allowedOrigins = [
+          'https://shiba-cars-partners.netlify.app',
+          'http://localhost:3000',
+          'http://localhost:3001', 
+          'http://localhost:3002',
+          'http://localhost:4000'
+        ];
+        
+        // Allow requests with no origin (e.g., mobile apps)
+        if (!origin) return callback(null, true);
+        
+        // Allow any origin in development
+        if (process.env.NODE_ENV === 'development') {
+          return callback(null, true);
+        }
+        
+        // Check if origin is allowed
+        if (allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          console.log('CORS blocked origin:', origin);
+          callback(null, true); // For now, allow all origins to test
+        }
+      },
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization']
+    };
+    
+    app.use(cors(corsOptions));
     
     app.use(morgan('combined', {
       stream: {

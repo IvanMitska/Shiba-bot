@@ -5,7 +5,6 @@ import { FiUsers, FiActivity, FiSettings, FiToggleLeft, FiToggleRight } from 're
 import { adminAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
-import { ru } from 'date-fns/locale';
 
 const AdminPanel = () => {
   const [selectedTab, setSelectedTab] = useState('partners');

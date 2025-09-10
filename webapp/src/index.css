@@ -1,16 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Porsche:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 body {
   margin: 0;
-  font-family: 'Porsche', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #0a0a0a;
+  background-color: #0f0f0f;
   color: #ffffff;
 }
 
@@ -21,7 +21,7 @@ code {
 
 @layer components {
   .card {
-    @apply bg-gradient-to-br from-dark-card to-dark-800 border border-dark-border rounded-2xl shadow-xl p-6 transition-all duration-300 hover:shadow-2xl hover:border-primary-500/50 backdrop-blur-sm;
+    @apply bg-dark-card border border-dark-border rounded-2xl p-6 transition-all duration-300 hover:bg-dark-card-hover;
   }
   
   .card-glass {
@@ -29,7 +29,7 @@ code {
   }
   
   .btn-primary {
-    @apply bg-gradient-to-r from-primary-500 to-primary-600 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 hover:from-primary-600 hover:to-primary-700 hover:shadow-lg hover:shadow-primary-500/25 active:scale-95 transform;
+    @apply bg-primary-orange text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 hover:bg-primary-orange-dark active:scale-95 transform;
   }
   
   .btn-gradient {

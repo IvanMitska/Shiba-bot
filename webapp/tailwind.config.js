@@ -10,9 +10,9 @@ module.exports = {
       },
       colors: {
         primary: {
-          500: '#6366f1',
-          600: '#4f46e5', 
-          700: '#4338ca',
+          500: '#FF6B35',
+          600: '#E55A2B',
+          700: '#D04A20',
           orange: '#FF6B35',
           'orange-dark': '#E55A2B',
         },
@@ -32,11 +32,12 @@ module.exports = {
           700: '#334155',
           800: '#1e293b',
           900: '#0f172a',
-          bg: '#0a0a0a',
+          bg: '#0f0f0f',
           card: '#1a1a1a',
+          'card-hover': '#242424',
           border: '#2a2a2a',
           text: '#ffffff',
-          'text-secondary': '#cccccc',
+          'text-secondary': '#a0a0a0',
         },
         accent: {
           cyan: '#06b6d4',

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiHome, FiBarChart2, FiClock, FiSettings, FiPhone, FiHeart, FiUser, FiMenu, FiX } from 'react-icons/fi';
+import { FiHome, FiBarChart2, FiClock, FiSettings, FiMenu, FiX } from 'react-icons/fi';
 import { HiSparkles } from 'react-icons/hi';
 import { useStore } from '../store/store';
 
