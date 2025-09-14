@@ -20,6 +20,9 @@ async function startApplication() {
     console.log('Environment:', process.env.NODE_ENV);
     console.log('Bot token exists:', !!process.env.BOT_TOKEN);
     console.log('Port:', process.env.PORT || 3000);
+    console.log('Railway Domain:', process.env.RAILWAY_PUBLIC_DOMAIN || 'Not set');
+    console.log('WEBAPP_URL:', process.env.WEBAPP_URL || 'Not set');
+    console.log('DOMAIN:', process.env.DOMAIN || 'Not set');
     
     // Initialize database
     await syncDatabase(process.env.NODE_ENV === 'development');
@@ -403,10 +406,21 @@ ${stats}
     const trackingRoutes = require('./web/routes/tracking');
     const apiRoutes = require('./web/routes/api');
     const adminRoutes = require('./web/routes/admin');
+    const webappRoutes = require('./web/routes/webapp');
+    
+    // Serve static files for telegram-webapp
+    const path = require('path');
+    app.use('/telegram-webapp', express.static(path.join(__dirname, '../telegram-webapp/build')));
     
     app.use('/', trackingRoutes);
     app.use('/api', apiRoutes);
     app.use('/api/admin', adminRoutes);
+    app.use('/api/webapp', webappRoutes);
+    
+    // Handle React Router for telegram-webapp
+    app.get('/telegram-webapp/*', (req, res) => {
+      res.sendFile(path.join(__dirname, '../telegram-webapp/build/index.html'));
+    });
     
     // 404 handler
     app.use((req, res, next) => {
