@@ -10,6 +10,7 @@ const logger = require('../utils/logger');
 const trackingRoutes = require('./routes/tracking');
 const apiRoutes = require('./routes/api');
 const adminRoutes = require('./routes/admin');
+const webappRoutes = require('./routes/webapp');
 
 class WebApp {
   constructor() {
@@ -65,6 +66,7 @@ class WebApp {
     
     this.app.use('/public', express.static(path.join(__dirname, 'public')));
     this.app.use('/webapp', express.static(path.join(__dirname, '../../webapp/build')));
+    this.app.use('/telegram-webapp', express.static(path.join(__dirname, '../../telegram-webapp/build')));
     this.app.use('/static', express.static(path.join(__dirname, '../../webapp/build/static')));
   }
   
@@ -99,9 +101,14 @@ class WebApp {
     this.app.use('/', trackingRoutes);
     this.app.use('/api', apiRoutes);
     this.app.use('/api/admin', adminRoutes);
+    this.app.use('/api/webapp', webappRoutes);
     
     this.app.get('/webapp/*', (req, res) => {
       res.sendFile(path.join(__dirname, '../../webapp/build/index.html'));
+    });
+    
+    this.app.get('/telegram-webapp/*', (req, res) => {
+      res.sendFile(path.join(__dirname, '../../telegram-webapp/build/index.html'));
     });
   }
   

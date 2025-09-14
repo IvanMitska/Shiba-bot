@@ -9,8 +9,10 @@
     "build": "cd webapp && npm install && npm run build",
     "migrate": "node src/database/migrations/migrate.js",
     "build:webapp": "cd webapp && npm run build",
-    "setup": "npm install && cd webapp && npm install && cd ..",
-    "test": "jest"
+    "build:telegram-webapp": "cd telegram-webapp && npm install && npm run build",
+    "setup": "npm install && cd webapp && npm install && cd .. && cd telegram-webapp && npm install && cd ..",
+    "test": "jest",
+    "test:webapp": "node test-webapp.js"
   },
   "keywords": [
     "telegram",

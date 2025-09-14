@@ -57,26 +57,20 @@ class PartnerBot {
       const message = `
 ${welcomeMessage}
 
-Ваша партнерская ссылка:
-🔗 \`${partnerLink}\`
+📊 Ваша статистика доступна в удобном веб-приложении!
 
 ${stats}
 
-Используйте кнопку ниже для открытия панели управления:`;
+Используйте кнопки ниже:`;
       
-      // Создаем кнопки в зависимости от окружения
-      const keyboardButtons = [
-        [Markup.button.callback('📋 Копировать ссылку', 'copy_link')],
-        [Markup.button.callback('🔄 Обновить статистику', 'refresh_stats')]
-      ];
+      // Создаем кнопки с Web App
+      const webAppUrl = process.env.WEBAPP_URL || `${process.env.DOMAIN}/telegram-webapp`;
       
-      // Добавляем веб-панель только если URL валидный (не localhost для телеграм)
-      const webAppUrl = process.env.WEBAPP_URL || `${process.env.DOMAIN}/webapp`;
-      if (webAppUrl && !webAppUrl.includes('localhost') && webAppUrl.startsWith('https://')) {
-        keyboardButtons.push([Markup.button.url('🌐 Открыть веб-панель', webAppUrl)]);
-      }
-      
-      const keyboard = Markup.inlineKeyboard(keyboardButtons);
+      const keyboard = Markup.inlineKeyboard([
+        [Markup.button.webApp('📊 Открыть панель статистики', webAppUrl)],
+        [Markup.button.callback('📋 Показать ссылку', 'show_link')],
+        [Markup.button.callback('🔄 Обновить', 'refresh_stats')]
+      ]);
       
       await ctx.replyWithMarkdown(message, keyboard);
       
@@ -101,33 +95,46 @@ ${stats}
       }
       
       switch (action) {
-        case 'copy_link':
+        case 'show_link':
           const link = partner.getPartnerLink();
-          await ctx.answerCbQuery('Ссылка скопирована в буфер обмена', { show_alert: true });
-          await ctx.reply(`\`${link}\``, { parse_mode: 'Markdown' });
+          await ctx.answerCbQuery();
+          await ctx.reply(`🔗 Ваша партнерская ссылка:\n\`${link}\`\n\nНажмите на ссылку, чтобы скопировать`, { 
+            parse_mode: 'Markdown',
+            reply_markup: {
+              inline_keyboard: [
+                [{ text: '📋 Копировать', url: `https://t.me/share/url?url=${encodeURIComponent(link)}` }]
+              ]
+            }
+          });
+          break;
+          
+        case 'copy_link':
+          const partnerLink = partner.getPartnerLink();
+          await ctx.answerCbQuery('Ссылка готова к копированию', { show_alert: true });
+          await ctx.reply(`\`${partnerLink}\``, { parse_mode: 'Markdown' });
           break;
           
         case 'refresh_stats':
           const stats = await formatPartnerStats(partner);
-          const partnerLink = partner.getPartnerLink();
           
           const message = `
 📊 Актуальная статистика
 
-Ваша партнерская ссылка:
-🔗 \`${partnerLink}\`
+Ваша статистика доступна в удобном веб-приложении!
 
-${stats}`;
+${stats}
+
+Используйте кнопки ниже:`;
           
-          const webAppUrl = process.env.WEBAPP_URL || `${process.env.DOMAIN}/webapp`;
+          const webAppUrl = process.env.WEBAPP_URL || `${process.env.DOMAIN}/telegram-webapp`;
           
           await ctx.editMessageText(message, {
             parse_mode: 'Markdown',
             reply_markup: {
               inline_keyboard: [
-                [{ text: '📋 Копировать ссылку', callback_data: 'copy_link' }],
-                [{ text: '🔄 Обновить статистику', callback_data: 'refresh_stats' }],
-                [{ text: '🌐 Открыть веб-панель', url: webAppUrl }]
+                [{ text: '📊 Открыть панель статистики', web_app: { url: webAppUrl } }],
+                [{ text: '📋 Показать ссылку', callback_data: 'show_link' }],
+                [{ text: '🔄 Обновить', callback_data: 'refresh_stats' }]
               ]
             }
           });
