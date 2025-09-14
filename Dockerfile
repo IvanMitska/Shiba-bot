@@ -5,19 +5,19 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 COPY webapp/package*.json ./webapp/
-COPY telegram-webapp/package*.json ./telegram-webapp/
 
 # Install all dependencies for build
 RUN npm install
 RUN cd webapp && npm install
-RUN cd telegram-webapp && npm install
 
 # Copy source code
 COPY . .
 
-# Build both webapps
+# Build webapp
 RUN cd webapp && npm run build
-RUN cd telegram-webapp && npm run build
+
+# For telegram-webapp, we'll use pre-built files from the repo
+# since they're already included
 
 FROM node:18-alpine
 
@@ -35,7 +35,9 @@ RUN npm ci --only=production
 # Copy built application from builder stage
 COPY --from=builder /app/src ./src
 COPY --from=builder /app/webapp/build ./webapp/build
-COPY --from=builder /app/telegram-webapp/build ./telegram-webapp/build
+
+# Copy telegram-webapp build directly from repo (pre-built)
+COPY telegram-webapp/build ./telegram-webapp/build
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
