@@ -1,10 +1,8 @@
 require('dotenv').config();
 const express = require('express');
-const { Telegraf } = require('telegraf');
 const { syncDatabase } = require('./database/models');
-const { Partner } = require('./database/models');
-const { formatPartnerStats } = require('./bot/utils');
 const logger = require('./utils/logger');
+const path = require('path');
 
 // Enable console logging in production for Railway
 if (process.env.NODE_ENV === 'production') {
@@ -28,11 +26,11 @@ async function startApplication() {
     await syncDatabase(process.env.NODE_ENV === 'development');
     console.log('✅ Database initialized');
     
-    // Create Express app directly
+    // Create Express app
     const app = express();
     const port = process.env.PORT || 3000;
     
-    // Import middleware from WebApp
+    // Import middleware
     const cors = require('cors');
     const helmet = require('helmet');
     const morgan = require('morgan');
@@ -58,26 +56,23 @@ async function startApplication() {
     
     app.use(compression());
     
-    // Configure CORS to allow Netlify landing
+    // Setup CORS
+    const allowedOrigins = [
+      'https://shiba-cars-partners.netlify.app',
+      'http://localhost:3000',
+      'http://localhost:3001',
+      process.env.WEBAPP_URL,
+      process.env.DOMAIN,
+      process.env.RAILWAY_PUBLIC_DOMAIN
+    ].filter(Boolean);
+    
     const corsOptions = {
-      origin: function(origin, callback) {
-        const allowedOrigins = [
-          'https://shiba-cars-partners.netlify.app',
-          'http://localhost:3000',
-          'http://localhost:3001', 
-          'http://localhost:3002',
-          'http://localhost:4000'
-        ];
-        
-        // Allow requests with no origin (e.g., mobile apps)
-        if (!origin) return callback(null, true);
-        
-        // Allow any origin in development
-        if (process.env.NODE_ENV === 'development') {
-          return callback(null, true);
+      origin: function (origin, callback) {
+        if (!origin) {
+          callback(null, true);
+          return;
         }
         
-        // Check if origin is allowed
         if (allowedOrigins.includes(origin)) {
           callback(null, true);
         } else {
@@ -87,7 +82,7 @@ async function startApplication() {
       },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization']
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Telegram-Init-Data']
     };
     
     app.use(cors(corsOptions));
@@ -116,219 +111,33 @@ async function startApplication() {
         status: 'ok', 
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
-        service: 'shibo-cars-bot'
+        service: 'shibo-cars-bot',
+        bot_token_set: !!process.env.BOT_TOKEN,
+        webhook_mode: !!process.env.RAILWAY_PUBLIC_DOMAIN,
+        domain: process.env.DOMAIN
       });
     });
     
-    // Root endpoint
-    app.get('/', (req, res) => {
-      res.json({
-        name: 'Shibo Cars Partner Bot',
-        status: 'running',
-        endpoints: {
-          health: '/health',
-          tracking: '/r/:code',
-          api: '/api/*',
-          webhook: '/webhook',
-          'test-bot': '/test-bot'
-        }
+    // Test endpoints
+    app.get('/test-bot', (req, res) => {
+      res.json({ 
+        message: 'Bot webhook endpoint is active',
+        webhook_url: webhookUrl || 'Not configured'
       });
     });
     
     let bot = null;
     let webhookUrl = null;
     
-    // Initialize Telegram bot
+    // Initialize Telegram bot with Web App support
     if (process.env.BOT_TOKEN) {
-      console.log('Initializing Telegram bot...');
+      console.log('Initializing Telegram bot with Web App support...');
       
       try {
-        bot = new Telegraf(process.env.BOT_TOKEN);
-        
-        // Register bot handlers
-        bot.command('start', async (ctx) => {
-          console.log('Received /start command from:', ctx.from.id);
-          
-          try {
-            const telegramId = ctx.from.id;
-            const { username, first_name, last_name } = ctx.from;
-            
-            let [partner, created] = await Partner.findOrCreate({
-              where: { telegramId },
-              defaults: {
-                telegramId,
-                username,
-                firstName: first_name,
-                lastName: last_name
-              }
-            });
-            
-            if (!created && !partner.isActive) {
-              return ctx.reply('Ваш аккаунт партнера временно заблокирован. Обратитесь к администратору.');
-            }
-            
-            if (!created) {
-              await partner.update({
-                username,
-                firstName: first_name,
-                lastName: last_name
-              });
-            }
-            
-            const partnerLink = partner.getPartnerLink();
-            const stats = await formatPartnerStats(partner);
-            
-            const welcomeMessage = created
-              ? `👋 Добро пожаловать в систему партнеров Shiba Cars!`
-              : `👋 С возвращением, ${first_name || 'партнер'}!`;
-            
-            const message = `
-${welcomeMessage}
-
-🚗 Ваша партнерская ссылка для отслеживания клиентов:
-🔗 \`${partnerLink}\`
-
-${stats}
-
-💡 Поделитесь этой ссылкой с потенциальными клиентами. 
-Когда они перейдут по ней и свяжутся с нами, вы увидите это в статистике.
-
-Используйте команды:
-/start - Показать эту информацию
-/stats - Обновить статистику`;
-            
-            // Добавляем инлайн кнопки
-            const { Markup } = require('telegraf');
-            const keyboard = Markup.inlineKeyboard([
-              [Markup.button.callback('📋 Копировать ссылку', 'copy_link')],
-              [Markup.button.callback('📊 Обновить статистику', 'refresh_stats')],
-              [Markup.button.url('🌐 Открыть лендинг', partnerLink)]
-            ]);
-            
-            await ctx.replyWithMarkdown(message, keyboard);
-            
-            console.log(`Partner ${created ? 'registered' : 'returned'}: ${telegramId}`);
-          } catch (error) {
-            console.error('Error in /start handler:', error);
-            await ctx.reply('Произошла ошибка. Пожалуйста, попробуйте позже.');
-          }
-        });
-        
-        bot.command('stats', async (ctx) => {
-          console.log('Received /stats command from:', ctx.from.id);
-          
-          try {
-            const partner = await Partner.findOne({ 
-              where: { telegramId: ctx.from.id } 
-            });
-            
-            if (!partner) {
-              return ctx.reply('Сначала зарегистрируйтесь с помощью команды /start');
-            }
-            
-            const stats = await formatPartnerStats(partner);
-            const partnerLink = partner.getPartnerLink();
-            
-            const message = `
-📊 Ваша актуальная статистика:
-
-🔗 Партнерская ссылка:
-\`${partnerLink}\`
-
-${stats}
-
-Обновлено: ${new Date().toLocaleString('ru-RU')}`;
-            
-            const { Markup } = require('telegraf');
-            const keyboard = Markup.inlineKeyboard([
-              [Markup.button.callback('📋 Копировать ссылку', 'copy_link')],
-              [Markup.button.callback('🔄 Обновить', 'refresh_stats')],
-              [Markup.button.url('🌐 Открыть лендинг', partnerLink)]
-            ]);
-            
-            await ctx.replyWithMarkdown(message, keyboard);
-          } catch (error) {
-            console.error('Error in /stats handler:', error);
-            await ctx.reply('Произошла ошибка при получении статистики.');
-          }
-        });
-        
-        // Обработчики для инлайн кнопок
-        bot.action('copy_link', async (ctx) => {
-          console.log('Copy link action from:', ctx.from.id);
-          
-          try {
-            const partner = await Partner.findOne({ 
-              where: { telegramId: ctx.from.id } 
-            });
-            
-            if (!partner) {
-              return ctx.answerCbQuery('Ошибка: партнер не найден');
-            }
-            
-            const partnerLink = partner.getPartnerLink();
-            
-            // Отвечаем на callback query
-            await ctx.answerCbQuery('📋 Ссылка скопирована! Нажмите на нее чтобы скопировать:', { show_alert: true });
-            
-            // Отправляем ссылку отдельным сообщением для удобного копирования
-            await ctx.reply(`\`${partnerLink}\``, { parse_mode: 'Markdown' });
-          } catch (error) {
-            console.error('Error in copy_link action:', error);
-            await ctx.answerCbQuery('Произошла ошибка');
-          }
-        });
-        
-        bot.action('refresh_stats', async (ctx) => {
-          console.log('Refresh stats action from:', ctx.from.id);
-          
-          try {
-            const partner = await Partner.findOne({ 
-              where: { telegramId: ctx.from.id } 
-            });
-            
-            if (!partner) {
-              return ctx.answerCbQuery('Ошибка: партнер не найден');
-            }
-            
-            const stats = await formatPartnerStats(partner);
-            const partnerLink = partner.getPartnerLink();
-            
-            const message = `
-📊 Ваша актуальная статистика:
-
-🔗 Партнерская ссылка:
-\`${partnerLink}\`
-
-${stats}
-
-Обновлено: ${new Date().toLocaleString('ru-RU')}`;
-            
-            const { Markup } = require('telegraf');
-            const keyboard = Markup.inlineKeyboard([
-              [Markup.button.callback('📋 Копировать ссылку', 'copy_link')],
-              [Markup.button.callback('🔄 Обновить', 'refresh_stats')],
-              [Markup.button.url('🌐 Открыть лендинг', partnerLink)]
-            ]);
-            
-            // Обновляем сообщение
-            await ctx.editMessageText(message, {
-              parse_mode: 'Markdown',
-              ...keyboard
-            });
-            
-            await ctx.answerCbQuery('✅ Статистика обновлена');
-          } catch (error) {
-            console.error('Error in refresh_stats action:', error);
-            await ctx.answerCbQuery('Произошла ошибка при обновлении');
-          }
-        });
-        
-        // Error handler
-        bot.catch((err, ctx) => {
-          console.error('Bot error:', err);
-          ctx.reply('Произошла ошибка. Пожалуйста, попробуйте позже.');
-        });
+        // Use the new PartnerBot class with Web App button
+        const PartnerBot = require('./bot/bot');
+        const botInstance = new PartnerBot(process.env.BOT_TOKEN);
+        bot = botInstance.bot;
         
         // Setup webhook or polling
         if (process.env.NODE_ENV === 'production') {
@@ -341,7 +150,7 @@ ${stats}
           
           console.log('Setting up webhook:', webhookUrl);
           
-          // CRITICAL: Register webhook endpoint BEFORE starting server
+          // Register webhook endpoint
           app.post('/webhook', async (req, res) => {
             console.log('Webhook received from IP:', req.ip);
             console.log('Webhook body:', JSON.stringify(req.body).substring(0, 200));
@@ -363,7 +172,6 @@ ${stats}
           
           const webhookInfo = await bot.telegram.getWebhookInfo();
           console.log('Webhook info:', webhookInfo);
-          
           console.log('✅ Bot webhook configured');
         } else {
           // Development mode - use polling
@@ -372,31 +180,12 @@ ${stats}
           console.log('✅ Bot started in polling mode');
         }
         
-        // Get bot info
         const botInfo = await bot.telegram.getMe();
-        console.log('✅ Bot connected:', `@${botInfo.username}`);
-        
-        // Add test endpoint AFTER bot is initialized
-        app.get('/test-bot', async (req, res) => {
-          try {
-            const botInfo = await bot.telegram.getMe();
-            const webhookInfo = await bot.telegram.getWebhookInfo();
-            res.json({
-              status: 'Bot is running',
-              bot: botInfo,
-              webhook: webhookInfo
-            });
-          } catch (error) {
-            res.json({
-              status: 'Bot error',
-              error: error.message
-            });
-          }
-        });
+        console.log(`✅ Bot connected: @${botInfo.username}`);
         
       } catch (error) {
-        console.error('❌ Failed to start bot:', error);
-        // Continue running server even if bot fails
+        console.error('Failed to initialize bot:', error);
+        console.error('Bot will not be available, but web server will continue');
       }
     } else {
       console.log('⚠️ BOT_TOKEN not provided, running without bot');
@@ -409,7 +198,6 @@ ${stats}
     const webappRoutes = require('./web/routes/webapp');
     
     // Serve static files for telegram-webapp
-    const path = require('path');
     app.use('/telegram-webapp', express.static(path.join(__dirname, '../telegram-webapp/build')));
     
     app.use('/', trackingRoutes);
@@ -430,9 +218,11 @@ ${stats}
     
     // Error handler
     app.use((err, req, res, next) => {
-      console.error('Unhandled error:', err);
+      logger.error('Unhandled error:', err);
+      
       const status = err.status || 500;
       const message = err.message || 'Internal server error';
+      
       res.status(status).json({
         error: message,
         ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
@@ -447,32 +237,48 @@ ${stats}
       logger.info(`Web server started on port ${port}`);
     });
     
-    // Keep process alive
-    if (process.env.NODE_ENV === 'production') {
-      setInterval(() => {
-        logger.info('Application heartbeat');
-      }, 30000);
-    }
+    // Heartbeat logging
+    setInterval(() => {
+      logger.info('Application heartbeat');
+    }, 30000);
     
     // Graceful shutdown
-    process.once('SIGINT', () => {
-      console.log('SIGINT received, shutting down gracefully');
-      if (bot) bot.stop('SIGINT');
-      server.close();
-      process.exit(0);
+    process.on('SIGINT', async () => {
+      console.log('\n🛑 Shutting down gracefully...');
+      
+      if (bot) {
+        await bot.stop('SIGINT');
+        console.log('✅ Bot stopped');
+      }
+      
+      server.close(() => {
+        console.log('✅ Server closed');
+        process.exit(0);
+      });
     });
     
-    process.once('SIGTERM', () => {
-      console.log('SIGTERM received, shutting down gracefully');
-      if (bot) bot.stop('SIGTERM');
-      server.close();
-      process.exit(0);
+    process.on('SIGTERM', async () => {
+      console.log('\n🛑 Shutting down gracefully...');
+      
+      if (bot) {
+        await bot.stop('SIGTERM');
+        console.log('✅ Bot stopped');
+      }
+      
+      server.close(() => {
+        console.log('✅ Server closed');
+        process.exit(0);
+      });
     });
     
   } catch (error) {
-    console.error('❌ Failed to start application:', error);
+    console.error('Fatal error during startup:', error);
     process.exit(1);
   }
 }
 
-startApplication();
+// Start the application
+startApplication().catch(error => {
+  console.error('Failed to start application:', error);
+  process.exit(1);
+});
