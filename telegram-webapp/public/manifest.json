@@ -1,0 +1,9 @@
+{
+  "short_name": "SHIBA-CARS",
+  "name": "SHIBA-CARS Partner Dashboard",
+  "icons": [],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#667eea",
+  "background_color": "#ffffff"
+}

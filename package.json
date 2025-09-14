@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "build": "cd webapp && npm install && npm run build",
+    "build": "npm run build:telegram-webapp",
+    "postinstall": "cd telegram-webapp && npm install && npm run build",
     "migrate": "node src/database/migrations/migrate.js",
     "build:webapp": "cd webapp && npm run build",
     "build:telegram-webapp": "cd telegram-webapp && npm install && npm run build",
