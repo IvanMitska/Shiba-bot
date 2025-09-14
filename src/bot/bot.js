@@ -64,7 +64,13 @@ ${stats}
 Используйте кнопки ниже:`;
       
       // Создаем кнопки с Web App
-      const webAppUrl = process.env.WEBAPP_URL || `${process.env.DOMAIN}/telegram-webapp`;
+      // Используем правильный URL для Railway
+      const domain = process.env.RAILWAY_PUBLIC_DOMAIN || process.env.DOMAIN || 'localhost:3000';
+      const protocol = domain.includes('localhost') ? 'http' : 'https';
+      const webAppUrl = process.env.WEBAPP_URL || `${protocol}://${domain}/telegram-webapp`;
+      
+      // Логируем URL для отладки
+      logger.info(`Web App URL: ${webAppUrl}`);
       
       const keyboard = Markup.inlineKeyboard([
         [Markup.button.webApp('📊 Открыть панель статистики', webAppUrl)],
@@ -126,7 +132,9 @@ ${stats}
 
 Используйте кнопки ниже:`;
           
-          const webAppUrl = process.env.WEBAPP_URL || `${process.env.DOMAIN}/telegram-webapp`;
+          const domain = process.env.RAILWAY_PUBLIC_DOMAIN || process.env.DOMAIN || 'localhost:3000';
+          const protocol = domain.includes('localhost') ? 'http' : 'https';
+          const webAppUrl = process.env.WEBAPP_URL || `${protocol}://${domain}/telegram-webapp`;
           
           await ctx.editMessageText(message, {
             parse_mode: 'Markdown',
