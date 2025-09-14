@@ -1,0 +1,12 @@
+[build]
+builder = "nixpacks"
+buildCommand = "npm install && cd telegram-webapp && npm install && npm run build && cd .."
+
+[deploy]
+startCommand = "npm start"
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+
+[[services]]
+name = "web"
+port = 3000
