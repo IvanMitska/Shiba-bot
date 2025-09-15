@@ -114,7 +114,7 @@ function App() {
   };
 
   return (
-    <div className="app" style={{ minHeight: '100vh', background: 'var(--tg-theme-bg-color, #ffffff)' }}>
+    <div className="app" style={{ minHeight: '100vh', background: '#1a1a1a', color: '#ffffff' }}>
       <div className="container">
         {/* Debug info - remove in production */}
         {debugInfo && (

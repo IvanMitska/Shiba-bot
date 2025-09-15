@@ -3,14 +3,21 @@
 @tailwind utilities;
 
 :root {
-  --tg-theme-bg-color: #ffffff;
-  --tg-theme-text-color: #000000;
+  --tg-theme-bg-color: #1a1a1a;
+  --tg-theme-text-color: #ffffff;
   --tg-theme-hint-color: #999999;
-  --tg-theme-link-color: #2481cc;
-  --tg-theme-button-color: #2481cc;
-  --tg-theme-button-text-color: #ffffff;
-  --tg-theme-secondary-bg-color: #f4f4f5;
+  --tg-theme-link-color: #FFD700;
+  --tg-theme-button-color: #FFD700;
+  --tg-theme-button-text-color: #000000;
+  --tg-theme-secondary-bg-color: #2a2a2a;
   --tg-viewport-height: 100vh;
+  
+  /* SHIBA-CARS Brand Colors */
+  --shiba-gold: #FFD700;
+  --shiba-gold-dark: #DAA520;
+  --shiba-black: #1a1a1a;
+  --shiba-dark-gray: #2a2a2a;
+  --shiba-light-gray: #3a3a3a;
 }
 
 * {
@@ -37,26 +44,40 @@ body {
 }
 
 .card {
-  background: var(--tg-theme-secondary-bg-color);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: var(--shiba-dark-gray);
+  border: 1px solid var(--shiba-gold);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 6px rgba(255, 215, 0, 0.1);
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 .stat-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--shiba-black) 0%, var(--shiba-dark-gray) 100%);
+  border: 2px solid var(--shiba-gold);
   color: white;
-  padding: 16px;
-  border-radius: 12px;
+  padding: 20px;
+  border-radius: 16px;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--shiba-gold) 0%, var(--shiba-gold-dark) 100%);
 }
 
 .stat-value {
@@ -71,34 +92,41 @@ body {
 }
 
 .button-primary {
-  background: var(--tg-theme-button-color);
-  color: var(--tg-theme-button-text-color);
+  background: linear-gradient(135deg, var(--shiba-gold) 0%, var(--shiba-gold-dark) 100%);
+  color: var(--shiba-black);
   border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
+  padding: 14px 28px;
+  border-radius: 12px;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   width: 100%;
-  transition: opacity 0.2s;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .button-primary:hover {
-  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
 }
 
 .button-primary:active {
-  opacity: 0.8;
+  transform: translateY(0);
 }
 
 .link-container {
-  background: var(--tg-theme-secondary-bg-color);
-  border-radius: 8px;
-  padding: 12px;
+  background: var(--shiba-black);
+  border: 2px solid var(--shiba-gold);
+  border-radius: 12px;
+  padding: 16px;
   margin: 16px 0;
   word-break: break-all;
   font-family: monospace;
   font-size: 14px;
+  color: var(--shiba-gold);
+  text-align: center;
 }
 
 .copy-button {
@@ -111,28 +139,32 @@ body {
 
 .tabs {
   display: flex;
-  background: var(--tg-theme-secondary-bg-color);
-  border-radius: 8px;
+  background: var(--shiba-black);
+  border: 1px solid var(--shiba-gold);
+  border-radius: 12px;
   padding: 4px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .tab {
   flex: 1;
-  padding: 10px;
+  padding: 12px;
   background: transparent;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 14px;
-  font-weight: 500;
-  color: var(--tg-theme-text-color);
+  font-weight: 600;
+  color: var(--shiba-gold);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .tab.active {
-  background: var(--tg-theme-button-color);
-  color: white;
+  background: linear-gradient(135deg, var(--shiba-gold) 0%, var(--shiba-gold-dark) 100%);
+  color: var(--shiba-black);
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
 }
 
 .history-item {
