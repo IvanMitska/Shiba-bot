@@ -197,7 +197,7 @@ async function startApplication() {
     const adminRoutes = require('./web/routes/admin');
     const webappRoutes = require('./web/routes/webapp');
     
-    // Serve static files for telegram-webapp
+    // Serve static files for telegram-webapp (with subdirectories)
     app.use('/telegram-webapp', express.static(path.join(__dirname, '../telegram-webapp/build')));
     
     app.use('/', trackingRoutes);
