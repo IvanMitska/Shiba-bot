@@ -114,49 +114,72 @@ function App() {
   };
 
   return (
-    <div className="app" style={{ minHeight: '100vh', background: '#1a1a1a', color: '#ffffff' }}>
+    <div className="app">
+      {/* Header with SHIBA CARS branding */}
+      <div className="app-header">
+        <div className="header-content">
+          <div className="logo-section">
+            <div>
+              <div className="logo-text">
+                <span className="shiba">SHIBA</span>
+                <span className="cars">CARS</span>
+              </div>
+              <div className="header-subtitle">Партнёрская программа</div>
+            </div>
+          </div>
+          <div className="premium-badge">
+            ⭐ Premium
+          </div>
+        </div>
+      </div>
+
       <div className="container">
         {/* Debug info - remove in production */}
         {debugInfo && (
-          <div style={{ 
-            padding: '10px', 
-            background: '#f0f0f0', 
+          <div style={{
+            padding: '10px',
+            background: 'rgba(255,140,0,0.1)',
             marginBottom: '10px',
             fontSize: '12px',
-            wordBreak: 'break-all'
+            wordBreak: 'break-all',
+            color: '#FF8C00',
+            borderRadius: '8px',
+            border: '1px solid rgba(255,140,0,0.2)'
           }}>
             Debug: {debugInfo}
           </div>
         )}
-        
+
         <div className="tabs">
-          <button 
+          <button
             className={`tab ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
           >
-            Главная
+            🏠 Главная
           </button>
-          <button 
+          <button
             className={`tab ${activeTab === 'statistics' ? 'active' : ''}`}
             onClick={() => setActiveTab('statistics')}
           >
-            Статистика
+            📊 Статистика
           </button>
-          <button 
+          <button
             className={`tab ${activeTab === 'history' ? 'active' : ''}`}
             onClick={() => setActiveTab('history')}
           >
-            История
+            📜 История
           </button>
-          <button 
+          <button
             className={`tab ${activeTab === 'profile' ? 'active' : ''}`}
             onClick={() => setActiveTab('profile')}
           >
-            Профиль
+            👤 Профиль
           </button>
         </div>
-        
-        {renderContent()}
+
+        <div className="fade-in">
+          {renderContent()}
+        </div>
       </div>
     </div>
   );
