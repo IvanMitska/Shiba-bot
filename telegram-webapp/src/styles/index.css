@@ -93,8 +93,7 @@ body::before {
 .header-content {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
+  justify-content: center;
 }
 
 .logo-section {

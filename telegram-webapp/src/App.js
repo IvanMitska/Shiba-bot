@@ -139,9 +139,6 @@ function App() {
               <div className="header-subtitle">ПАРТНЁРСКАЯ ПРОГРАММА</div>
             </div>
           </div>
-          <div className="premium-badge">
-            ⭐ PREMIUM
-          </div>
         </div>
       </div>
 
