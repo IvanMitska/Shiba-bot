@@ -14,6 +14,12 @@ function App() {
   const [error, setError] = useState(null);
   const [debugInfo, setDebugInfo] = useState('App started');
 
+  // Scroll to top when tab changes
+  const handleTabChange = (tabName) => {
+    setActiveTab(tabName);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   useEffect(() => {
     const initApp = async () => {
       try {
@@ -168,28 +174,28 @@ function App() {
         <div className="bottom-tabs">
           <button
             className={`bottom-tab ${activeTab === 'dashboard' ? 'active' : ''}`}
-            onClick={() => setActiveTab('dashboard')}
+            onClick={() => handleTabChange('dashboard')}
           >
             <span className="tab-icon">🏠</span>
             <span className="tab-label">ГЛАВНАЯ</span>
           </button>
           <button
             className={`bottom-tab ${activeTab === 'statistics' ? 'active' : ''}`}
-            onClick={() => setActiveTab('statistics')}
+            onClick={() => handleTabChange('statistics')}
           >
             <span className="tab-icon">📊</span>
             <span className="tab-label">СТАТИСТИКА</span>
           </button>
           <button
             className={`bottom-tab ${activeTab === 'history' ? 'active' : ''}`}
-            onClick={() => setActiveTab('history')}
+            onClick={() => handleTabChange('history')}
           >
             <span className="tab-icon">📜</span>
             <span className="tab-label">ИСТОРИЯ</span>
           </button>
           <button
             className={`bottom-tab ${activeTab === 'profile' ? 'active' : ''}`}
-            onClick={() => setActiveTab('profile')}
+            onClick={() => handleTabChange('profile')}
           >
             <span className="tab-icon">👤</span>
             <span className="tab-label">ПРОФИЛЬ</span>
