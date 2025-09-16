@@ -136,60 +136,67 @@ function App() {
                 <span className="shiba">SHIBA</span>
                 <span className="cars">CARS</span>
               </div>
-              <div className="header-subtitle">Партнёрская программа</div>
+              <div className="header-subtitle">ПАРТНЁРСКАЯ ПРОГРАММА</div>
             </div>
           </div>
           <div className="premium-badge">
-            ⭐ Premium
+            ⭐ PREMIUM
           </div>
         </div>
       </div>
 
       <div className="container">
-        {/* Always show debug info for now */}
-        <div style={{
-          padding: '10px',
-          background: 'rgba(255,140,0,0.1)',
-          marginBottom: '10px',
-          fontSize: '12px',
-          wordBreak: 'break-all',
-          color: '#FF8C00',
-          borderRadius: '8px',
-          border: '1px solid rgba(255,140,0,0.2)'
-        }}>
-          Debug: {debugInfo || 'No debug info'}<br/>
-          Status: {loading ? 'Loading...' : error ? `Error: ${error}` : 'Ready'}
+        {/* Debug info - temporary */}
+        {false && (
+          <div style={{
+            padding: '10px',
+            background: 'rgba(255,140,0,0.1)',
+            marginBottom: '10px',
+            fontSize: '12px',
+            wordBreak: 'break-all',
+            color: '#FF8C00',
+            borderRadius: '8px',
+            border: '1px solid rgba(255,140,0,0.2)'
+          }}>
+            Debug: {debugInfo || 'No debug info'}<br/>
+            Status: {loading ? 'Loading...' : error ? `Error: ${error}` : 'Ready'}
+          </div>
+        )}
+
+        <div className="main-content">
+          {renderContent()}
         </div>
 
-        <div className="tabs">
+        {/* Bottom Navigation */}
+        <div className="bottom-tabs">
           <button
-            className={`tab ${activeTab === 'dashboard' ? 'active' : ''}`}
+            className={`bottom-tab ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
           >
-            🏠 Главная
+            <span className="tab-icon">🏠</span>
+            <span className="tab-label">ГЛАВНАЯ</span>
           </button>
           <button
-            className={`tab ${activeTab === 'statistics' ? 'active' : ''}`}
+            className={`bottom-tab ${activeTab === 'statistics' ? 'active' : ''}`}
             onClick={() => setActiveTab('statistics')}
           >
-            📊 Статистика
+            <span className="tab-icon">📊</span>
+            <span className="tab-label">СТАТИСТИКА</span>
           </button>
           <button
-            className={`tab ${activeTab === 'history' ? 'active' : ''}`}
+            className={`bottom-tab ${activeTab === 'history' ? 'active' : ''}`}
             onClick={() => setActiveTab('history')}
           >
-            📜 История
+            <span className="tab-icon">📜</span>
+            <span className="tab-label">ИСТОРИЯ</span>
           </button>
           <button
-            className={`tab ${activeTab === 'profile' ? 'active' : ''}`}
+            className={`bottom-tab ${activeTab === 'profile' ? 'active' : ''}`}
             onClick={() => setActiveTab('profile')}
           >
-            👤 Профиль
+            <span className="tab-icon">👤</span>
+            <span className="tab-label">ПРОФИЛЬ</span>
           </button>
-        </div>
-
-        <div className="fade-in">
-          {renderContent()}
         </div>
       </div>
     </div>

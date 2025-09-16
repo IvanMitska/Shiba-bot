@@ -63,25 +63,31 @@ body::before {
 .app {
   position: relative;
   z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .container {
   max-width: 100%;
-  padding: 0;
+  padding: 0 16px;
   margin: 0 auto;
   position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Header Section */
 .app-header {
-  background: linear-gradient(180deg, rgba(0,0,0,0.95) 0%, rgba(10,10,10,0.95) 100%);
+  background: linear-gradient(180deg, rgba(0,0,0,0.98) 0%, rgba(10,10,10,0.98) 100%);
   backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 140, 0, 0.1);
-  padding: 20px 16px;
-  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 140, 0, 0.15);
+  padding: 16px;
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
 }
 
 .header-content {
@@ -120,17 +126,72 @@ body::before {
   margin-top: 4px;
 }
 
-/* Navigation Tabs */
-.tabs {
+/* Main Content Area */
+.main-content {
+  flex: 1;
+  padding-bottom: 80px; /* Space for bottom nav */
+  overflow-y: auto;
+}
+
+/* Bottom Navigation */
+.bottom-tabs {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 140, 0, 0.1);
-  border-radius: 16px;
-  padding: 4px;
-  margin-bottom: 20px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(10,10,10,1) 100%);
+  border-top: 1px solid rgba(255, 140, 0, 0.2);
   backdrop-filter: blur(20px);
+  z-index: 100;
+  padding: 8px 0 env(safe-area-inset-bottom, 0);
+}
+
+.bottom-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  overflow: hidden;
+}
+
+.bottom-tab .tab-icon {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.bottom-tab .tab-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bottom-tab.active {
+  color: var(--shiba-orange);
+}
+
+.bottom-tab.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  background: var(--shiba-orange);
+  box-shadow: 0 0 10px rgba(255, 140, 0, 0.5);
+}
+
+/* Old tabs - hidden */
+.tabs {
+  display: none;
 }
 
 .tabs::before {

@@ -71,7 +71,7 @@ const Dashboard = ({ data }) => {
 
         <button className="button-primary copy-button" onClick={copyLink}>
           {copied ? <FiCheck size={18} /> : <FiCopy size={18} />}
-          <span>{copied ? 'Скопировано!' : 'Копировать ссылку'}</span>
+          <span>{copied ? 'СКОПИРОВАНО!' : 'КОПИРОВАТЬ ССЫЛКУ'}</span>
         </button>
       </div>
 
