@@ -88,12 +88,23 @@ body::before {
   top: 0;
   z-index: 100;
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.app-header.hidden {
+  transform: translateY(-100%);
+}
+
+.app-header.visible {
+  transform: translateY(0);
 }
 
 .header-content {
   display: flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
 }
 
 .logo-section {

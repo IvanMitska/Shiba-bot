@@ -13,12 +13,38 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [debugInfo, setDebugInfo] = useState('App started');
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   // Scroll to top when tab changes
   const handleTabChange = (tabName) => {
     setActiveTab(tabName);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    setIsHeaderVisible(true); // Show header when changing tabs
   };
+
+  // Handle scroll to hide/show header
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        // Scrolling down & past 50px
+        setIsHeaderVisible(false);
+      } else {
+        // Scrolling up
+        setIsHeaderVisible(true);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [lastScrollY]);
 
   useEffect(() => {
     const initApp = async () => {
@@ -134,7 +160,7 @@ function App() {
   return (
     <div className="app">
       {/* Header with SHIBA CARS branding */}
-      <div className="app-header">
+      <div className={`app-header ${isHeaderVisible ? 'visible' : 'hidden'}`}>
         <div className="header-content">
           <div className="logo-section">
             <div>
