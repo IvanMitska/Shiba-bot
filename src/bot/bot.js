@@ -67,7 +67,7 @@ ${stats}
       // Используем правильный URL для Railway
       const domain = process.env.RAILWAY_PUBLIC_DOMAIN || process.env.DOMAIN || 'localhost:3000';
       const protocol = domain.includes('localhost') ? 'http' : 'https';
-      const webAppUrl = process.env.WEBAPP_URL || `${protocol}://${domain}/telegram-webapp`;
+      const webAppUrl = process.env.WEBAPP_URL || `${protocol}://${domain}/telegram-webapp/test.html`;
       
       // Логируем URL для отладки
       logger.info(`Web App URL: ${webAppUrl}`);
@@ -134,7 +134,7 @@ ${stats}
           
           const domain = process.env.RAILWAY_PUBLIC_DOMAIN || process.env.DOMAIN || 'localhost:3000';
           const protocol = domain.includes('localhost') ? 'http' : 'https';
-          const webAppUrl = process.env.WEBAPP_URL || `${protocol}://${domain}/telegram-webapp`;
+          const webAppUrl = process.env.WEBAPP_URL || `${protocol}://${domain}/telegram-webapp/test.html`;
           
           await ctx.editMessageText(message, {
             parse_mode: 'Markdown',
