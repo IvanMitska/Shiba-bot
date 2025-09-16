@@ -12,64 +12,45 @@ function App() {
   const [partnerData, setPartnerData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [debugInfo, setDebugInfo] = useState('');
+  const [debugInfo, setDebugInfo] = useState('App started');
 
   useEffect(() => {
     const initApp = async () => {
       try {
         console.log('Starting Web App initialization...');
         setDebugInfo('Initializing...');
-        
-        const tg = getTelegramWebApp();
-        console.log('Telegram WebApp object:', tg);
-        
-        // Настраиваем Telegram Web App
-        if (tg.ready) {
-          tg.ready();
-          console.log('Telegram Web App ready');
+
+        // Используем тестовые данные всегда для отладки
+        const testData = {
+          partnerId: 'TEST123',
+          partnerLink: 'https://example.com/test',
+          registrationDate: new Date().toISOString(),
+          statistics: {
+            todayClicks: 5,
+            totalClicks: 42,
+            whatsappClicks: 25,
+            telegramClicks: 17,
+            conversionRate: 12.5,
+            earnings: 1250
+          }
+        };
+
+        setPartnerData(testData);
+        setDebugInfo('Test data loaded');
+
+        // Пробуем инициализировать Telegram WebApp если доступен
+        try {
+          const tg = getTelegramWebApp();
+          if (tg && tg.ready) {
+            tg.ready();
+            tg.expand && tg.expand();
+            setDebugInfo(`Telegram OK, platform: ${tg.platform || 'unknown'}`);
+          }
+        } catch (tgError) {
+          console.warn('Telegram WebApp not available:', tgError);
+          setDebugInfo('Running without Telegram');
         }
-        
-        if (tg.expand) {
-          tg.expand();
-          console.log('Telegram Web App expanded');
-        }
-        
-        // Получаем данные пользователя из Telegram
-        const user = tg.initDataUnsafe?.user;
-        console.log('User data:', user);
-        setDebugInfo(`User: ${JSON.stringify(user)}`);
-        
-        if (!user || !user.id) {
-          // В режиме разработки используем тестовые данные
-          console.log('No user data, using test data');
-          const testData = {
-            partnerId: 'TEST123',
-            partnerLink: 'https://example.com/test',
-            registrationDate: new Date().toISOString(),
-            statistics: {
-              todayClicks: 5,
-              totalClicks: 42,
-              whatsappClicks: 25,
-              telegramClicks: 17,
-              conversionRate: 12.5,
-              earnings: 1250
-            }
-          };
-          setPartnerData(testData);
-        } else {
-          // Загружаем данные партнера
-          const data = await fetchPartnerData(user.id);
-          setPartnerData(data);
-        }
-        
-        // Настраиваем кнопку "Назад"
-        if (tg.BackButton) {
-          tg.BackButton.show();
-          tg.BackButton.onClick(() => {
-            tg.close();
-          });
-        }
-        
+
       } catch (err) {
         console.error('Ошибка инициализации:', err);
         setError(err.message || 'Неизвестная ошибка');
@@ -79,7 +60,8 @@ function App() {
       }
     };
 
-    initApp();
+    // Задержка для предотвращения краша при быстрой загрузке
+    setTimeout(initApp, 100);
   }, []);
 
   const renderContent = () => {
