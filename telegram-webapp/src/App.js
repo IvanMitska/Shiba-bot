@@ -113,6 +113,36 @@ function App() {
     }
   };
 
+  // Always show debug info for troubleshooting
+  if (!loading && !error && !partnerData) {
+    return (
+      <div style={{ padding: '20px', background: '#000', color: '#fff', minHeight: '100vh' }}>
+        <h2 style={{ color: '#FF8C00', marginBottom: '20px' }}>Debug Mode</h2>
+        <div style={{ background: '#111', padding: '15px', borderRadius: '8px', marginBottom: '10px' }}>
+          <strong>Loading:</strong> {String(loading)}<br/>
+          <strong>Error:</strong> {error || 'none'}<br/>
+          <strong>Data:</strong> {partnerData ? 'loaded' : 'null'}<br/>
+          <strong>Debug Info:</strong> {debugInfo}<br/>
+          <strong>Window.Telegram:</strong> {typeof window.Telegram !== 'undefined' ? 'exists' : 'missing'}<br/>
+          <strong>WebApp:</strong> {window.Telegram?.WebApp ? 'exists' : 'missing'}
+        </div>
+        <button
+          onClick={() => window.location.reload()}
+          style={{
+            padding: '10px 20px',
+            background: '#FF8C00',
+            color: '#000',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: 'bold'
+          }}
+        >
+          Reload
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="app">
       {/* Header with SHIBA CARS branding */}
@@ -134,21 +164,20 @@ function App() {
       </div>
 
       <div className="container">
-        {/* Debug info - remove in production */}
-        {debugInfo && (
-          <div style={{
-            padding: '10px',
-            background: 'rgba(255,140,0,0.1)',
-            marginBottom: '10px',
-            fontSize: '12px',
-            wordBreak: 'break-all',
-            color: '#FF8C00',
-            borderRadius: '8px',
-            border: '1px solid rgba(255,140,0,0.2)'
-          }}>
-            Debug: {debugInfo}
-          </div>
-        )}
+        {/* Always show debug info for now */}
+        <div style={{
+          padding: '10px',
+          background: 'rgba(255,140,0,0.1)',
+          marginBottom: '10px',
+          fontSize: '12px',
+          wordBreak: 'break-all',
+          color: '#FF8C00',
+          borderRadius: '8px',
+          border: '1px solid rgba(255,140,0,0.2)'
+        }}>
+          Debug: {debugInfo || 'No debug info'}<br/>
+          Status: {loading ? 'Loading...' : error ? `Error: ${error}` : 'Ready'}
+        </div>
 
         <div className="tabs">
           <button
