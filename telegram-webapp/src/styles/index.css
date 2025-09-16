@@ -480,23 +480,57 @@ body::before {
   margin-top: 16px;
 }
 
-/* History Items */
+/* History Page Styles */
+.history-page {
+  padding-bottom: 20px;
+}
+
+.history-card {
+  background: linear-gradient(135deg, rgba(10, 10, 10, 0.95) 0%, rgba(20, 20, 20, 0.95) 100%);
+  border: 1px solid rgba(255, 140, 0, 0.1);
+  border-radius: 24px;
+  padding: 24px;
+  margin-bottom: 16px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.history-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #ffffff;
+}
+
+.empty-history {
+  text-align: center;
+  padding: 32px 0;
+  color: var(--shiba-text-secondary);
+  font-size: 14px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .history-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  background: linear-gradient(135deg, rgba(255, 140, 0, 0.02) 0%, rgba(255, 140, 0, 0.05) 100%);
-  border: 1px solid rgba(255, 140, 0, 0.1);
-  border-radius: 12px;
-  margin-bottom: 12px;
-  backdrop-filter: blur(10px);
+  background: rgba(255, 140, 0, 0.05);
+  border: 1px solid rgba(255, 140, 0, 0.15);
+  border-radius: 16px;
   transition: all 0.3s;
 }
 
 .history-item:hover {
-  background: linear-gradient(135deg, rgba(255, 140, 0, 0.05) 0%, rgba(255, 140, 0, 0.1) 100%);
-  border-color: rgba(255, 140, 0, 0.2);
+  background: rgba(255, 140, 0, 0.08);
+  border-color: rgba(255, 140, 0, 0.25);
   transform: translateX(4px);
 }
 
@@ -504,26 +538,81 @@ body::before {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 14px;
-  color: #ffffff;
-  font-weight: 600;
 }
 
-.history-source .icon {
-  width: 32px;
-  height: 32px;
+.source-icon {
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 140, 0, 0.1);
-  border-radius: 8px;
-  font-size: 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+}
+
+.source-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.source-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.source-country {
+  font-size: 12px;
+  color: var(--shiba-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .history-time {
   font-size: 12px;
   color: var(--shiba-text-secondary);
   font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Geography Styles */
+.geography-list {
+  display: grid;
+  gap: 12px;
+}
+
+.geography-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: rgba(255, 140, 0, 0.05);
+  border: 1px solid rgba(255, 140, 0, 0.15);
+  border-radius: 14px;
+  transition: all 0.3s;
+}
+
+.geography-item:hover {
+  background: rgba(255, 140, 0, 0.08);
+  border-color: rgba(255, 140, 0, 0.25);
+  transform: translateX(2px);
+}
+
+.country-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.country-value {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--shiba-orange);
 }
 
 /* Chart Container */
@@ -587,21 +676,7 @@ body::before {
   box-shadow: 0 2px 10px rgba(255, 140, 0, 0.3);
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.fade-in {
-  animation: fadeIn 0.5s ease-out;
-}
+/* Animations removed for better performance */
 
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
