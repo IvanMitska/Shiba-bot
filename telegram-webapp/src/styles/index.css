@@ -673,48 +673,52 @@ body::before {
   color: var(--shiba-text-secondary);
 }
 
-.profile-stats-row {
+/* Profile Info Grid */
+.profile-info-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 12px;
 }
 
-.profile-stat-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
+.profile-info-card {
   background: rgba(255, 140, 0, 0.05);
-  border: 1px solid rgba(255, 140, 0, 0.1);
+  border: 1px solid rgba(255, 140, 0, 0.15);
   border-radius: 16px;
+  padding: 16px;
+  text-align: center;
   transition: all 0.3s;
 }
 
-.profile-stat-item:hover {
+.profile-info-card:hover {
   background: rgba(255, 140, 0, 0.08);
-  border-color: rgba(255, 140, 0, 0.2);
+  border-color: rgba(255, 140, 0, 0.25);
+  transform: translateY(-2px);
 }
 
-.stat-icon {
-  color: var(--shiba-orange);
-  font-size: 20px;
-}
-
-.stat-content {
-  flex: 1;
-}
-
-.stat-label {
-  font-size: 11px;
+.info-header {
+  font-size: 10px;
   color: var(--shiba-text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 2px;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  font-weight: 600;
 }
 
-.stat-value {
-  font-size: 14px;
-  font-weight: 600;
+.info-value {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.info-icon {
+  color: var(--shiba-orange);
+  font-size: 24px;
+}
+
+.info-value span {
+  font-size: 16px;
+  font-weight: 700;
   color: #ffffff;
 }
 

@@ -49,94 +49,45 @@ const Profile = ({ data }) => {
           </div>
         </div>
 
-        <div className="profile-stats-row">
-          <div className="profile-stat-item">
-            <FiUser className="stat-icon" />
-            <div className="stat-content">
-              <div className="stat-label">ID партнера</div>
-              <div className="stat-value">{partnerId}</div>
+        <div className="profile-info-grid">
+          <div className="profile-info-card">
+            <div className="info-header">ID ПАРТНЕРА</div>
+            <div className="info-value">
+              <FiUser className="info-icon" />
+              <span>{partnerId}</span>
             </div>
           </div>
 
-          <div className="profile-stat-item">
-            <FiCalendar className="stat-icon" />
-            <div className="stat-content">
-              <div className="stat-label">Дата регистрации</div>
-              <div className="stat-value">{formatDate(data?.registrationDate)}</div>
+          <div className="profile-info-card">
+            <div className="info-header">ДАТА РЕГИСТРАЦИИ</div>
+            <div className="info-value">
+              <FiCalendar className="info-icon" />
+              <span>{formatDate(data?.registrationDate)}</span>
             </div>
           </div>
 
-          <div className="profile-stat-item">
-            <FiAward className="stat-icon" />
-            <div className="stat-content">
-              <div className="stat-label">Статус</div>
-              <div className="stat-value">Активный партнер</div>
+          <div className="profile-info-card">
+            <div className="info-header">СТАТУС</div>
+            <div className="info-value">
+              <FiAward className="info-icon" />
+              <span>Активный партнер</span>
             </div>
           </div>
 
-          <div className="profile-stat-item">
-            <FiTrendingUp className="stat-icon" />
-            <div className="stat-content">
-              <div className="stat-label">Уровень</div>
-              <div className="stat-value">Бронза</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Partner Statistics */}
-      <div className="profile-card">
-        <h3 className="card-title">
-          <FaCar style={{ marginRight: '8px', color: 'var(--shiba-orange)' }} />
-          Статистика партнёра
-        </h3>
-
-        <div className="partner-stats-grid">
-          <div className="partner-stat">
-            <div className="partner-stat-icon" style={{ background: 'rgba(255, 140, 0, 0.1)' }}>
-              <FaCar color="var(--shiba-orange)" size={20} />
-            </div>
-            <div className="partner-stat-info">
-              <div className="partner-stat-value">{stats.totalClicks || 42}</div>
-              <div className="partner-stat-label">Всего переходов</div>
-            </div>
-          </div>
-
-          <div className="partner-stat">
-            <div className="partner-stat-icon" style={{ background: 'rgba(37, 211, 102, 0.1)' }}>
-              <FaWhatsapp color="#25D366" size={20} />
-            </div>
-            <div className="partner-stat-info">
-              <div className="partner-stat-value">{stats.whatsappClicks || 25}</div>
-              <div className="partner-stat-label">WhatsApp</div>
-            </div>
-          </div>
-
-          <div className="partner-stat">
-            <div className="partner-stat-icon" style={{ background: 'rgba(0, 136, 204, 0.1)' }}>
-              <FaTelegram color="#0088cc" size={20} />
-            </div>
-            <div className="partner-stat-info">
-              <div className="partner-stat-value">{stats.telegramClicks || 17}</div>
-              <div className="partner-stat-label">Telegram</div>
-            </div>
-          </div>
-
-          <div className="partner-stat">
-            <div className="partner-stat-icon" style={{ background: 'rgba(255, 140, 0, 0.1)' }}>
-              <FiTrendingUp color="var(--shiba-orange)" size={20} />
-            </div>
-            <div className="partner-stat-info">
-              <div className="partner-stat-value">{stats.earnings ? `₽${stats.earnings}` : '₽1250'}</div>
-              <div className="partner-stat-label">Заработано</div>
+          <div className="profile-info-card">
+            <div className="info-header">УРОВЕНЬ</div>
+            <div className="info-value">
+              <FiTrendingUp className="info-icon" />
+              <span>Бронза</span>
             </div>
           </div>
         </div>
       </div>
+
 
       {/* Contact Support */}
       <div className="profile-card">
-        <h3 className="card-title">Поддержка</h3>
+        <h3 className="card-title">ПОДДЕРЖКА</h3>
 
         <div className="support-buttons">
           <button className="support-button">
@@ -147,11 +98,6 @@ const Profile = ({ data }) => {
           <button className="support-button">
             <FiMail size={20} />
             <span>support@shibacars.com</span>
-          </button>
-
-          <button className="support-button">
-            <FiPhone size={20} />
-            <span>+7 (495) 123-45-67</span>
           </button>
         </div>
       </div>
