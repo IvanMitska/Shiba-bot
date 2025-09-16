@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+            font-family: Arial;
+            padding: 20px;
+        }
+        .info {
+            background: #111;
+            border: 1px solid #FF8C00;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        h1 {
+            color: #FF8C00;
+        }
+    </style>
+</head>
+<body>
+    <h1>SHIBA CARS - Test Page</h1>
+
+    <div class="info">
+        <h3>Browser Info:</h3>
+        <p>User Agent: <span id="userAgent"></span></p>
+        <p>Screen: <span id="screen"></span></p>
+    </div>
+
+    <div class="info">
+        <h3>Telegram WebApp:</h3>
+        <p>Loaded: <span id="tgLoaded"></span></p>
+        <p>Version: <span id="tgVersion"></span></p>
+        <p>Platform: <span id="tgPlatform"></span></p>
+        <p>User: <span id="tgUser"></span></p>
+    </div>
+
+    <div class="info">
+        <h3>Scripts:</h3>
+        <p>JavaScript enabled: YES</p>
+        <p>Time: <span id="time"></span></p>
+    </div>
+
+    <div class="info">
+        <h3>Test Links:</h3>
+        <p><a href="/telegram-webapp/" style="color: #FF8C00;">Go to Main App</a></p>
+        <p><a href="/telegram-webapp/index.html" style="color: #FF8C00;">Go to index.html</a></p>
+    </div>
+
+    <script>
+        // Basic info
+        document.getElementById('userAgent').innerText = navigator.userAgent;
+        document.getElementById('screen').innerText = window.innerWidth + 'x' + window.innerHeight;
+        document.getElementById('time').innerText = new Date().toLocaleString();
+
+        // Telegram info
+        if (window.Telegram && window.Telegram.WebApp) {
+            const tg = window.Telegram.WebApp;
+            document.getElementById('tgLoaded').innerText = 'YES';
+            document.getElementById('tgVersion').innerText = tg.version || 'unknown';
+            document.getElementById('tgPlatform').innerText = tg.platform || 'unknown';
+
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                document.getElementById('tgUser').innerText = JSON.stringify(tg.initDataUnsafe.user);
+            } else {
+                document.getElementById('tgUser').innerText = 'No user data';
+            }
+
+            // Expand app
+            tg.ready();
+            tg.expand();
+        } else {
+            document.getElementById('tgLoaded').innerText = 'NO - Telegram WebApp not found';
+        }
+    </script>
+</body>
+</html>
