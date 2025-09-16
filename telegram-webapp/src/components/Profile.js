@@ -1,139 +1,166 @@
 import React from 'react';
-import { FiUser, FiCalendar, FiAward, FiTrendingUp, FiSettings, FiHelpCircle } from 'react-icons/fi';
-import { format } from 'date-fns';
-import { ru } from 'date-fns/locale';
+import { FiUser, FiCalendar, FiAward, FiTrendingUp, FiMail, FiPhone, FiLogOut } from 'react-icons/fi';
+import { FaCar, FaWhatsapp, FaTelegram } from 'react-icons/fa';
 
 const Profile = ({ data }) => {
   const user = window.Telegram?.WebApp?.initDataUnsafe?.user || {};
-  
+
+  // Generate avatar colors based on user ID
+  const getAvatarColor = (id) => {
+    const colors = [
+      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+    ];
+    return colors[(id || 0) % colors.length];
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '16 сентября 2025';
+    const date = new Date(dateString);
+    const months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+                   'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+  };
+
+  const partnerId = data?.partnerId || 'TEST123';
+  const stats = data?.statistics || {};
+
   return (
-    <div className="profile">
-      <div className="card">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-          <div style={{
-            width: '60px',
-            height: '60px',
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontSize: '24px',
-            fontWeight: 'bold'
-          }}>
-            {user.first_name?.[0] || 'U'}
+    <div className="profile-page">
+      {/* User Info Card */}
+      <div className="profile-card">
+        <div className="profile-header">
+          <div
+            className="profile-avatar"
+            style={{ background: getAvatarColor(user.id) }}
+          >
+            {user.first_name?.[0]?.toUpperCase() || 'I'}
           </div>
-          <div>
-            <h2 style={{ fontSize: '18px', fontWeight: 'bold' }}>
-              {user.first_name} {user.last_name}
+          <div className="profile-info">
+            <h2 className="profile-name">
+              {user.first_name || 'Ivan'} {user.last_name || ''}
             </h2>
             {user.username && (
-              <p style={{ fontSize: '14px', color: 'var(--tg-theme-hint-color)' }}>
-                @{user.username}
-              </p>
+              <p className="profile-username">@{user.username}</p>
             )}
           </div>
         </div>
 
-        <div style={{ display: 'grid', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--tg-theme-secondary-bg-color)', borderRadius: '8px' }}>
-            <FiUser size={20} color="#667eea" />
-            <div>
-              <div style={{ fontSize: '12px', color: 'var(--tg-theme-hint-color)' }}>ID партнера</div>
-              <div style={{ fontSize: '14px', fontWeight: '500' }}>{data?.partnerId || user.id}</div>
+        <div className="profile-stats-row">
+          <div className="profile-stat-item">
+            <FiUser className="stat-icon" />
+            <div className="stat-content">
+              <div className="stat-label">ID партнера</div>
+              <div className="stat-value">{partnerId}</div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--tg-theme-secondary-bg-color)', borderRadius: '8px' }}>
-            <FiCalendar size={20} color="#667eea" />
-            <div>
-              <div style={{ fontSize: '12px', color: 'var(--tg-theme-hint-color)' }}>Дата регистрации</div>
-              <div style={{ fontSize: '14px', fontWeight: '500' }}>
-                {data?.registrationDate ? 
-                  format(new Date(data.registrationDate), 'd MMMM yyyy', { locale: ru }) :
-                  'Сегодня'
-                }
-              </div>
+          <div className="profile-stat-item">
+            <FiCalendar className="stat-icon" />
+            <div className="stat-content">
+              <div className="stat-label">Дата регистрации</div>
+              <div className="stat-value">{formatDate(data?.registrationDate)}</div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--tg-theme-secondary-bg-color)', borderRadius: '8px' }}>
-            <FiAward size={20} color="#667eea" />
-            <div>
-              <div style={{ fontSize: '12px', color: 'var(--tg-theme-hint-color)' }}>Статус</div>
-              <div style={{ fontSize: '14px', fontWeight: '500' }}>Активный партнер</div>
+          <div className="profile-stat-item">
+            <FiAward className="stat-icon" />
+            <div className="stat-content">
+              <div className="stat-label">Статус</div>
+              <div className="stat-value">Активный партнер</div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--tg-theme-secondary-bg-color)', borderRadius: '8px' }}>
-            <FiTrendingUp size={20} color="#667eea" />
-            <div>
-              <div style={{ fontSize: '12px', color: 'var(--tg-theme-hint-color)' }}>Уровень</div>
-              <div style={{ fontSize: '14px', fontWeight: '500' }}>Бронза</div>
+          <div className="profile-stat-item">
+            <FiTrendingUp className="stat-icon" />
+            <div className="stat-content">
+              <div className="stat-label">Уровень</div>
+              <div className="stat-value">Бронза</div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="card">
-        <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
-          Достижения
+      {/* Partner Statistics */}
+      <div className="profile-card">
+        <h3 className="card-title">
+          <FaCar style={{ marginRight: '8px', color: 'var(--shiba-orange)' }} />
+          Статистика партнёра
         </h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-          <div style={{ textAlign: 'center', padding: '12px', background: 'white', borderRadius: '8px' }}>
-            <div style={{ fontSize: '24px', marginBottom: '4px' }}>🎯</div>
-            <div style={{ fontSize: '10px', color: 'var(--tg-theme-hint-color)' }}>Первый клик</div>
+
+        <div className="partner-stats-grid">
+          <div className="partner-stat">
+            <div className="partner-stat-icon" style={{ background: 'rgba(255, 140, 0, 0.1)' }}>
+              <FaCar color="var(--shiba-orange)" size={20} />
+            </div>
+            <div className="partner-stat-info">
+              <div className="partner-stat-value">{stats.totalClicks || 42}</div>
+              <div className="partner-stat-label">Всего переходов</div>
+            </div>
           </div>
-          <div style={{ textAlign: 'center', padding: '12px', background: 'white', borderRadius: '8px' }}>
-            <div style={{ fontSize: '24px', marginBottom: '4px' }}>🔥</div>
-            <div style={{ fontSize: '10px', color: 'var(--tg-theme-hint-color)' }}>10 переходов</div>
+
+          <div className="partner-stat">
+            <div className="partner-stat-icon" style={{ background: 'rgba(37, 211, 102, 0.1)' }}>
+              <FaWhatsapp color="#25D366" size={20} />
+            </div>
+            <div className="partner-stat-info">
+              <div className="partner-stat-value">{stats.whatsappClicks || 25}</div>
+              <div className="partner-stat-label">WhatsApp</div>
+            </div>
           </div>
-          <div style={{ textAlign: 'center', padding: '12px', background: 'white', borderRadius: '8px', opacity: 0.5 }}>
-            <div style={{ fontSize: '24px', marginBottom: '4px' }}>🏆</div>
-            <div style={{ fontSize: '10px', color: 'var(--tg-theme-hint-color)' }}>100 переходов</div>
+
+          <div className="partner-stat">
+            <div className="partner-stat-icon" style={{ background: 'rgba(0, 136, 204, 0.1)' }}>
+              <FaTelegram color="#0088cc" size={20} />
+            </div>
+            <div className="partner-stat-info">
+              <div className="partner-stat-value">{stats.telegramClicks || 17}</div>
+              <div className="partner-stat-label">Telegram</div>
+            </div>
+          </div>
+
+          <div className="partner-stat">
+            <div className="partner-stat-icon" style={{ background: 'rgba(255, 140, 0, 0.1)' }}>
+              <FiTrendingUp color="var(--shiba-orange)" size={20} />
+            </div>
+            <div className="partner-stat-info">
+              <div className="partner-stat-value">{stats.earnings ? `₽${stats.earnings}` : '₽1250'}</div>
+              <div className="partner-stat-label">Заработано</div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="card">
-        <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
-          Настройки и поддержка
-        </h3>
-        <div style={{ display: 'grid', gap: '8px' }}>
-          <button style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '12px',
-            background: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            width: '100%',
-            textAlign: 'left'
-          }}>
-            <FiSettings size={20} color="#667eea" />
-            <span style={{ fontSize: '14px' }}>Настройки уведомлений</span>
+      {/* Contact Support */}
+      <div className="profile-card">
+        <h3 className="card-title">Поддержка</h3>
+
+        <div className="support-buttons">
+          <button className="support-button">
+            <FaTelegram size={20} />
+            <span>Написать в поддержку</span>
           </button>
-          
-          <button style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '12px',
-            background: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            width: '100%',
-            textAlign: 'left'
-          }}>
-            <FiHelpCircle size={20} color="#667eea" />
-            <span style={{ fontSize: '14px' }}>Помощь и поддержка</span>
+
+          <button className="support-button">
+            <FiMail size={20} />
+            <span>support@shibacars.com</span>
+          </button>
+
+          <button className="support-button">
+            <FiPhone size={20} />
+            <span>+7 (495) 123-45-67</span>
           </button>
         </div>
       </div>
+
+      {/* Logout Button */}
+      <button className="logout-button">
+        <FiLogOut size={18} />
+        <span>Выйти из аккаунта</span>
+      </button>
     </div>
   );
 };
