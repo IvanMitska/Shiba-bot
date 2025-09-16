@@ -14,7 +14,6 @@ function App() {
   const [error, setError] = useState(null);
   const [debugInfo, setDebugInfo] = useState('App started');
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
 
   // Scroll to top when tab changes
   const handleTabChange = (tabName) => {
@@ -25,18 +24,34 @@ function App() {
 
   // Handle scroll to hide/show header
   useEffect(() => {
-    const handleScroll = () => {
+    let ticking = false;
+    let scrollY = window.scrollY;
+
+    const updateHeader = () => {
       const currentScrollY = window.scrollY;
 
-      if (currentScrollY > lastScrollY && currentScrollY > 50) {
-        // Scrolling down & past 50px
+      if (Math.abs(currentScrollY - scrollY) < 5) {
+        ticking = false;
+        return;
+      }
+
+      if (currentScrollY > scrollY && currentScrollY > 80) {
+        // Scrolling down & past 80px
         setIsHeaderVisible(false);
-      } else {
+      } else if (currentScrollY < scrollY) {
         // Scrolling up
         setIsHeaderVisible(true);
       }
 
-      setLastScrollY(currentScrollY);
+      scrollY = currentScrollY;
+      ticking = false;
+    };
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateHeader);
+        ticking = true;
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -44,7 +59,7 @@ function App() {
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [lastScrollY]);
+  }, []);
 
   useEffect(() => {
     const initApp = async () => {

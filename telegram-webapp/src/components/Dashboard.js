@@ -94,16 +94,16 @@ const Dashboard = ({ data }) => {
         </div>
 
         <div className="stat-card">
-          <div className="icon">
-            <FaWhatsapp />
+          <div className="icon" style={{ background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)' }}>
+            <FaWhatsapp color="white" size={24} />
           </div>
           <div className="stat-value">{stats.whatsappClicks}</div>
           <div className="stat-label">WhatsApp</div>
         </div>
 
         <div className="stat-card">
-          <div className="icon">
-            <FaTelegram />
+          <div className="icon" style={{ background: 'linear-gradient(135deg, #229ED9 0%, #0088CC 100%)' }}>
+            <FaTelegram color="white" size={24} />
           </div>
           <div className="stat-value">{stats.telegramClicks}</div>
           <div className="stat-label">Telegram</div>
