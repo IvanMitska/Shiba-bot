@@ -109,68 +109,6 @@ const Dashboard = ({ data }) => {
           <div className="stat-label">Telegram</div>
         </div>
       </div>
-
-
-      {/* Performance Card */}
-      <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h3 style={{ fontSize: '16px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            Эффективность
-          </h3>
-          <div className="premium-badge">
-            ⚡ Live
-          </div>
-        </div>
-
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '16px',
-          marginBottom: '20px'
-        }}>
-          <div style={{
-            padding: '16px',
-            background: 'rgba(255,140,0,0.05)',
-            borderRadius: '12px',
-            border: '1px solid rgba(255,140,0,0.1)'
-          }}>
-            <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--shiba-orange)' }}>
-              {stats.earnings ? `₽${stats.earnings}` : '₽0'}
-            </div>
-            <div style={{ fontSize: '11px', color: 'var(--shiba-text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '4px' }}>
-              Заработано
-            </div>
-          </div>
-
-          <div style={{
-            padding: '16px',
-            background: 'rgba(255,140,0,0.05)',
-            borderRadius: '12px',
-            border: '1px solid rgba(255,140,0,0.1)'
-          }}>
-            <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--shiba-orange)' }}>
-              {stats.totalClicks > 0 ? Math.round((stats.earnings / stats.totalClicks) * 100) / 100 : 0}%
-            </div>
-            <div style={{ fontSize: '11px', color: 'var(--shiba-text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '4px' }}>
-              Конверсия
-            </div>
-          </div>
-        </div>
-
-        <div style={{
-          padding: '12px',
-          background: 'rgba(0,0,0,0.3)',
-          borderRadius: '8px',
-          fontSize: '12px',
-          color: 'var(--shiba-text-secondary)',
-          textAlign: 'center'
-        }}>
-          Обновлено: {new Date().toLocaleString('ru-RU', {
-            hour: '2-digit',
-            minute: '2-digit'
-          })}
-        </div>
-      </div>
     </div>
   );
 };
