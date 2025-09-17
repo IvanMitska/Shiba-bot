@@ -100,18 +100,63 @@ class WebApp {
       });
     });
     
-    // Root endpoint
+    // Root endpoint - проверяем домен
     this.app.get('/', (req, res) => {
-      res.json({
-        name: 'Shibo Cars Partner Bot',
-        status: 'running',
-        endpoints: {
-          health: '/health',
-          tracking: '/r/:code',
-          api: '/api/*',
-          webhook: '/webhook'
-        }
-      });
+      // Если это запрос с домена лендинга, показываем главную страницу
+      const host = req.get('host');
+      if (host && (host.includes('shiba-cars-phuket.com') ||
+                   host === process.env.LANDING_DOMAIN?.replace('https://', '').replace('http://', ''))) {
+        // Показываем страницу лендинга или редирект
+        res.send(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>SHIBA CARS - Partner Program</title>
+            <meta charset="utf-8">
+            <style>
+              body {
+                background: #000;
+                color: #FF8C00;
+                font-family: Arial;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+              }
+              .container {
+                text-align: center;
+                padding: 40px;
+              }
+              h1 { font-size: 48px; margin-bottom: 20px; }
+              p { font-size: 20px; color: #fff; }
+              a { color: #FF8C00; text-decoration: none; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>SHIBA CARS PHUKET</h1>
+              <p>Premium Car Rental Service</p>
+              <p>Partner Program</p>
+              <br>
+              <p>Contact: <a href="https://t.me/ShibaCars_Phuket">@ShibaCars_Phuket</a></p>
+            </div>
+          </body>
+          </html>
+        `);
+      } else {
+        // Для основного домена возвращаем JSON
+        res.json({
+          name: 'Shibo Cars Partner Bot',
+          status: 'running',
+          endpoints: {
+            health: '/health',
+            tracking: '/r/:code',
+            api: '/api/*',
+            webhook: '/webhook'
+          }
+        });
+      }
     });
     
     this.app.use('/', trackingRoutes);
