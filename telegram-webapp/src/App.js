@@ -109,7 +109,7 @@ function App() {
               });
 
               const partnerData = {
-                partnerId: response.data.uniqueCode || response.data.id,
+                partnerId: response.data.uniqueCode || String(response.data.id),
                 partnerLink: response.data.partnerLink,
                 registrationDate: response.data.createdAt,
                 statistics: {
@@ -148,7 +148,7 @@ function App() {
           console.error('API Error:', apiError);
           // Используем тестовые данные при ошибке API
           const testData = {
-            partnerId: telegramId || 'TEST123',
+            partnerId: String(telegramId || 'TEST123'),
             partnerLink: `https://example.com/r/${telegramId || 'TEST123'}`,
             registrationDate: new Date().toISOString(),
             statistics: {

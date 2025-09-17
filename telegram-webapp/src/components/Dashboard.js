@@ -58,7 +58,7 @@ const Dashboard = ({ data }) => {
               Добро пожаловать!
             </h2>
             <p style={{ fontSize: '13px', color: 'var(--shiba-text-secondary)' }}>
-              Партнёр #{data?.partnerId?.slice(-4) || '0000'}
+              Партнёр #{String(data?.partnerId || '0000').slice(-4)}
             </p>
           </div>
         </div>
