@@ -127,9 +127,14 @@ function App() {
             }
           } else {
             // Тестовые данные для разработки
+            // Используем текущий домен или shiba-cars-phuket.com
+            const currentDomain = window.location.hostname === 'localhost'
+              ? 'http://localhost:3000'
+              : 'https://shiba-cars-phuket.com';
+
             const testData = {
               partnerId: 'TEST123',
-              partnerLink: 'https://example.com/r/TEST123',
+              partnerLink: `${currentDomain}/r/TEST123`,
               registrationDate: new Date().toISOString(),
               statistics: {
                 todayClicks: 5,
@@ -147,9 +152,14 @@ function App() {
         } catch (apiError) {
           console.error('API Error:', apiError);
           // Используем тестовые данные при ошибке API
+          // Используем текущий домен или shiba-cars-phuket.com
+          const currentDomain = window.location.hostname === 'localhost'
+            ? 'http://localhost:3000'
+            : 'https://shiba-cars-phuket.com';
+
           const testData = {
             partnerId: String(telegramId || 'TEST123'),
-            partnerLink: `https://example.com/r/${telegramId || 'TEST123'}`,
+            partnerLink: `${currentDomain}/r/${telegramId || 'TEST123'}`,
             registrationDate: new Date().toISOString(),
             statistics: {
               todayClicks: 0,
