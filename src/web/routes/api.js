@@ -6,34 +6,98 @@ const trackingService = require('../../services/tracking');
 const { Op } = require('sequelize');
 const { startOfDay, endOfDay, subDays, format } = require('date-fns');
 const logger = require('../../utils/logger');
+const crypto = require('crypto');
+
+// Функция для проверки Telegram initData
+const verifyTelegramWebAppData = (initData) => {
+  try {
+    const urlParams = new URLSearchParams(initData);
+    const hash = urlParams.get('hash');
+    urlParams.delete('hash');
+
+    const dataCheckString = Array.from(urlParams.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, value]) => `${key}=${value}`)
+      .join('\n');
+
+    const secret = crypto
+      .createHmac('sha256', 'WebAppData')
+      .update(process.env.BOT_TOKEN)
+      .digest();
+
+    const calculatedHash = crypto
+      .createHmac('sha256', secret)
+      .update(dataCheckString)
+      .digest('hex');
+
+    if (calculatedHash === hash) {
+      const user = JSON.parse(urlParams.get('user') || '{}');
+      return user;
+    }
+
+    return null;
+  } catch (error) {
+    logger.error('Telegram data verification error:', error);
+    return null;
+  }
+};
 
 const authMiddleware = async (req, res, next) => {
   try {
+    // Сначала пробуем JWT токен
     const token = req.headers.authorization?.split(' ')[1] || req.query.token;
-    
-    if (!token) {
-      return res.status(401).json({ error: 'No token provided' });
-    }
-    
-    const decoded = verifyWebAppToken(token);
-    
-    if (!decoded) {
-      return res.status(401).json({ error: 'Invalid token' });
-    }
-    
-    if (decoded.type === 'partner') {
-      const partner = await Partner.findByPk(decoded.partnerId);
-      if (!partner || !partner.isActive) {
-        return res.status(403).json({ error: 'Partner not found or inactive' });
+
+    if (token && token.startsWith('ey')) { // JWT токены начинаются с 'ey'
+      const decoded = verifyWebAppToken(token);
+
+      if (decoded) {
+        if (decoded.type === 'partner') {
+          const partner = await Partner.findByPk(decoded.partnerId);
+          if (!partner || !partner.isActive) {
+            return res.status(403).json({ error: 'Partner not found or inactive' });
+          }
+          req.partner = partner;
+          req.userType = 'partner';
+          return next();
+        } else if (decoded.type === 'admin') {
+          req.adminId = decoded.adminId;
+          req.userType = 'admin';
+          return next();
+        }
       }
-      req.partner = partner;
-      req.userType = 'partner';
-    } else if (decoded.type === 'admin') {
-      req.adminId = decoded.adminId;
-      req.userType = 'admin';
     }
-    
-    next();
+
+    // Если это не JWT, пробуем как Telegram initData
+    if (token) {
+      const telegramUser = verifyTelegramWebAppData(token);
+
+      if (telegramUser && telegramUser.id) {
+        // Находим или создаем партнера
+        let partner = await Partner.findOne({
+          where: { telegramId: telegramUser.id }
+        });
+
+        if (!partner) {
+          // Создаем нового партнера
+          partner = await Partner.create({
+            telegramId: telegramUser.id,
+            username: telegramUser.username,
+            firstName: telegramUser.first_name,
+            lastName: telegramUser.last_name
+          });
+        }
+
+        if (!partner.isActive) {
+          return res.status(403).json({ error: 'Partner account is inactive' });
+        }
+
+        req.partner = partner;
+        req.userType = 'partner';
+        return next();
+      }
+    }
+
+    return res.status(401).json({ error: 'Invalid or missing authentication' });
   } catch (error) {
     logger.error('Auth middleware error:', error);
     res.status(500).json({ error: 'Authentication error' });
@@ -53,6 +117,7 @@ router.get('/partner/info', async (req, res) => {
     
     res.json({
       id: partner.id,
+      uniqueCode: partner.uniqueCode,
       username: partner.username,
       firstName: partner.firstName,
       lastName: partner.lastName,
@@ -74,12 +139,29 @@ router.get('/partner/stats', async (req, res) => {
     if (req.userType !== 'partner') {
       return res.status(403).json({ error: 'Access denied' });
     }
-    
+
     const { period = 'week' } = req.query;
     const partnerId = req.partner.id;
-    
+
+    // Если запрашивают статистику за сегодня
+    if (period === 'today') {
+      const todayStart = startOfDay(new Date());
+      const todayEnd = endOfDay(new Date());
+
+      const todayClicks = await Click.count({
+        where: {
+          partnerId,
+          clickedAt: {
+            [Op.between]: [todayStart, todayEnd]
+          }
+        }
+      });
+
+      return res.json({ todayClicks });
+    }
+
     const stats = await trackingService.getPartnerStats(partnerId, period);
-    
+
     res.json(stats);
   } catch (error) {
     logger.error('Error getting partner stats:', error);

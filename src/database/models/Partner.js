@@ -87,7 +87,8 @@ const Partner = sequelize.define('Partner', {
 });
 
 Partner.prototype.getPartnerLink = function() {
-  const domain = process.env.DOMAIN || 'https://localhost:3000';
+  // Используем отдельный домен для партнерских ссылок если он указан
+  const domain = process.env.LANDING_DOMAIN || process.env.DOMAIN || 'https://localhost:3000';
   return `${domain}/r/${this.uniqueCode}`;
 };
 

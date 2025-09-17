@@ -10,10 +10,18 @@ const Dashboard = ({ data }) => {
       navigator.clipboard.writeText(data.partnerLink);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-      
+
       // Haptic feedback
       if (window.Telegram?.WebApp?.HapticFeedback) {
         window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+      }
+
+      // Уведомление для пользователя
+      if (window.Telegram?.WebApp?.showPopup) {
+        window.Telegram.WebApp.showPopup({
+          message: 'Ссылка скопирована!',
+          buttons: [{ type: 'ok' }]
+        });
       }
     }
   };
@@ -64,7 +72,14 @@ const Dashboard = ({ data }) => {
           <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
             Ваша партнёрская ссылка
           </h3>
-          <div className="link-container">
+          <div className="link-container" style={{
+            fontSize: '12px',
+            wordBreak: 'break-all',
+            padding: '12px',
+            background: 'rgba(0,0,0,0.5)',
+            borderRadius: '8px',
+            border: '1px solid rgba(255,140,0,0.2)'
+          }}>
             {data?.partnerLink || 'Загрузка...'}
           </div>
         </div>

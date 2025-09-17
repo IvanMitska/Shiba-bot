@@ -5,6 +5,7 @@ import History from './components/History';
 import Profile from './components/Profile';
 import { getTelegramWebApp } from './utils/telegram';
 import { fetchPartnerData } from './services/api';
+import axios from 'axios';
 import './styles/index.css';
 
 function App() {
@@ -67,35 +68,101 @@ function App() {
         console.log('Starting Web App initialization...');
         setDebugInfo('Initializing...');
 
-        // Используем тестовые данные всегда для отладки
-        const testData = {
-          partnerId: 'TEST123',
-          partnerLink: 'https://example.com/test',
-          registrationDate: new Date().toISOString(),
-          statistics: {
-            todayClicks: 5,
-            totalClicks: 42,
-            whatsappClicks: 25,
-            telegramClicks: 17,
-            conversionRate: 12.5,
-            earnings: 1250
-          }
-        };
+        // Инициализируем Telegram WebApp
+        const tg = getTelegramWebApp();
+        let telegramId = null;
+        let authToken = null;
 
-        setPartnerData(testData);
-        setDebugInfo('Test data loaded');
+        if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+          telegramId = tg.initDataUnsafe.user.id;
+          authToken = tg.initData;
 
-        // Пробуем инициализировать Telegram WebApp если доступен
+          tg.ready();
+          tg.expand && tg.expand();
+          setDebugInfo(`User ID: ${telegramId}`);
+        } else {
+          // Тестовый режим
+          console.warn('Running in test mode without Telegram');
+        }
+
+        // Получаем данные партнера с сервера
         try {
-          const tg = getTelegramWebApp();
-          if (tg && tg.ready) {
-            tg.ready();
-            tg.expand && tg.expand();
-            setDebugInfo(`Telegram OK, platform: ${tg.platform || 'unknown'}`);
+          if (telegramId && authToken) {
+            // Настраиваем axios для отправки токена
+            const apiUrl = process.env.REACT_APP_API_URL || window.location.origin + '/api';
+
+            const response = await axios.get(`${apiUrl}/partner/info`, {
+              headers: {
+                'Authorization': `Bearer ${authToken}`
+              }
+            });
+
+            if (response.data) {
+              // Получаем статистику за сегодня
+              const statsResponse = await axios.get(`${apiUrl}/partner/stats`, {
+                headers: {
+                  'Authorization': `Bearer ${authToken}`
+                },
+                params: {
+                  period: 'today'
+                }
+              });
+
+              const partnerData = {
+                partnerId: response.data.uniqueCode || response.data.id,
+                partnerLink: response.data.partnerLink,
+                registrationDate: response.data.createdAt,
+                statistics: {
+                  todayClicks: statsResponse.data?.todayClicks || 0,
+                  totalClicks: response.data.totalClicks || 0,
+                  whatsappClicks: response.data.whatsappClicks || 0,
+                  telegramClicks: response.data.telegramClicks || 0,
+                  conversionRate: 0,
+                  earnings: 0
+                }
+              };
+
+              setPartnerData(partnerData);
+              setDebugInfo('Data loaded from server');
+            }
+          } else {
+            // Тестовые данные для разработки
+            const testData = {
+              partnerId: 'TEST123',
+              partnerLink: 'https://example.com/r/TEST123',
+              registrationDate: new Date().toISOString(),
+              statistics: {
+                todayClicks: 5,
+                totalClicks: 42,
+                whatsappClicks: 25,
+                telegramClicks: 17,
+                conversionRate: 0,
+                earnings: 0
+              }
+            };
+
+            setPartnerData(testData);
+            setDebugInfo('Test mode - no Telegram data');
           }
-        } catch (tgError) {
-          console.warn('Telegram WebApp not available:', tgError);
-          setDebugInfo('Running without Telegram');
+        } catch (apiError) {
+          console.error('API Error:', apiError);
+          // Используем тестовые данные при ошибке API
+          const testData = {
+            partnerId: telegramId || 'TEST123',
+            partnerLink: `https://example.com/r/${telegramId || 'TEST123'}`,
+            registrationDate: new Date().toISOString(),
+            statistics: {
+              todayClicks: 0,
+              totalClicks: 0,
+              whatsappClicks: 0,
+              telegramClicks: 0,
+              conversionRate: 0,
+              earnings: 0
+            }
+          };
+
+          setPartnerData(testData);
+          setDebugInfo('API error - using fallback data');
         }
 
       } catch (err) {
