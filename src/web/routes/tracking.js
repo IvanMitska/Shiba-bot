@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const fs = require('fs');
 const trackingService = require('../../services/tracking');
 const { Settings } = require('../../database/models');
 const { getClientIP } = require('../../bot/utils');
@@ -27,29 +29,76 @@ router.get('/r/:code', async (req, res) => {
     }
     
     const { partner, click } = result;
-    
-    const [
-      title,
-      subtitle,
-      whatsappMessage,
-      telegramMessage
-    ] = await Promise.all([
-      Settings.getValue('landing_title', 'Аренда транспорта'),
-      Settings.getValue('landing_subtitle', 'Свяжитесь с нами удобным способом'),
-      Settings.getValue('whatsapp_message', 'Здравствуйте! Интересует аренда транспорта.'),
-      Settings.getValue('telegram_message', 'Здравствуйте! Интересует аренда транспорта.')
-    ]);
-    
-    res.render('landing', {
-      title,
-      subtitle,
-      clickId: click.id,
-      partnerCode: code,
-      whatsappNumber: process.env.WHATSAPP_NUMBER,
-      telegramBot: process.env.TELEGRAM_COMPANY_BOT,
-      whatsappMessage,
-      telegramMessage
-    });
+
+    // Read the HTML file
+    const landingPath = path.join(__dirname, '../../../netlify-landing/index.html');
+    let html = fs.readFileSync(landingPath, 'utf-8');
+
+    // Inject tracking data and configuration
+    const whatsappNumber = process.env.WHATSAPP_NUMBER || '66959657805';
+    const telegramBot = process.env.TELEGRAM_COMPANY_BOT || 'ShibaCars_Phuket';
+    const whatsappMessage = encodeURIComponent('Здравствуйте! Интересует аренда авто.');
+
+    // Inject click tracking script and data
+    const trackingScript = `
+      <script>
+        window.partnerData = {
+          clickId: '${click.id}',
+          partnerCode: '${code}',
+          whatsappNumber: '${whatsappNumber}',
+          telegramBot: '${telegramBot}',
+          whatsappMessage: '${whatsappMessage}'
+        };
+
+        // Track redirect clicks
+        function trackRedirect(type) {
+          fetch('/api/redirect', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              clickId: window.partnerData.clickId,
+              partnerCode: window.partnerData.partnerCode,
+              type: type
+            })
+          });
+
+          // Redirect based on type
+          if (type === 'whatsapp') {
+            const whatsappUrl = 'https://wa.me/' + window.partnerData.whatsappNumber +
+                               '?text=' + window.partnerData.whatsappMessage;
+            window.open(whatsappUrl, '_blank');
+          } else if (type === 'telegram') {
+            const telegramUrl = 'https://t.me/' + window.partnerData.telegramBot;
+            window.open(telegramUrl, '_blank');
+          }
+        }
+
+        // Update button click handlers
+        document.addEventListener('DOMContentLoaded', function() {
+          const whatsappBtn = document.querySelector('.whatsapp-btn');
+          const telegramBtn = document.querySelector('.telegram-btn');
+
+          if (whatsappBtn) {
+            whatsappBtn.onclick = function() {
+              trackRedirect('whatsapp');
+              return false;
+            };
+          }
+
+          if (telegramBtn) {
+            telegramBtn.onclick = function() {
+              trackRedirect('telegram');
+              return false;
+            };
+          }
+        });
+      </script>
+    `;
+
+    // Inject script before closing body tag
+    html = html.replace('</body>', trackingScript + '</body>');
+
+    res.send(html);
   } catch (error) {
     logger.error('Error in tracking route:', error);
     res.status(500).send('Произошла ошибка');
