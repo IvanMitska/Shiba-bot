@@ -293,7 +293,8 @@ async function startApplication() {
     app.use('/telegram-webapp', express.static(path.join(__dirname, '../telegram-webapp/build')));
 
     // Serve static files for landing page
-    app.use('/assets', express.static(path.join(__dirname, '../netlify-landing')));
+    app.use('/assets', express.static(path.join(__dirname, '../landing-static')));
+    app.use('/', express.static(path.join(__dirname, '../landing-static')));
     
     app.use('/', trackingRoutes);
     app.use('/api', apiRoutes);

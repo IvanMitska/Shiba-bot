@@ -31,7 +31,7 @@ router.get('/r/:code', async (req, res) => {
     const { partner, click } = result;
 
     // Read the HTML file
-    const landingPath = path.join(__dirname, '../../../netlify-landing/index.html');
+    const landingPath = path.join(__dirname, '../../../landing-static/index.html');
     let html = fs.readFileSync(landingPath, 'utf-8');
 
     // Inject tracking data and configuration

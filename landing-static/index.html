@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href="/">
+    <title>Shiba Cars - Premium Car Rental in Phuket</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 20% 50%, #ff6b35 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, #ff6b35 0%, transparent 50%),
+                        radial-gradient(circle at 40% 20%, #ff8c42 0%, transparent 50%);
+            opacity: 0.1;
+            animation: rotate 30s linear infinite;
+            z-index: -1;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .container {
+            background: rgba(40, 40, 40, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 107, 53, 0.2);
+            border-radius: 24px;
+            padding: 48px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+                        0 0 100px rgba(255, 107, 53, 0.1);
+            animation: slideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .logo-container {
+            margin-bottom: 32px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .logo {
+            width: 200px;
+            height: auto;
+            filter: drop-shadow(0 0 20px rgba(255, 107, 53, 0.3));
+        }
+        
+        /* Placeholder for logo - replace with actual logo */
+        .logo-placeholder {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+        }
+        
+        .logo-placeholder .shiba {
+            color: #ff6b35;
+        }
+        
+        .logo-placeholder .cars {
+            color: #ffffff;
+            margin-left: 8px;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: rgba(255, 107, 53, 0.1);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            color: #ff6b35;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+        
+        h1 {
+            color: #ffffff;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+        
+        .subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            font-weight: 400;
+        }
+        
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+        
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px 32px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            border: none;
+            position: relative;
+            overflow: hidden;
+            text-transform: none;
+            letter-spacing: 0.2px;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn-whatsapp {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+            border: 2px solid transparent;
+        }
+        
+        .btn-whatsapp:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(37, 211, 102, 0.4);
+            background: linear-gradient(135deg, #128C7E 0%, #25D366 100%);
+        }
+        
+        .btn-telegram {
+            background: linear-gradient(135deg, #2AABEE 0%, #229ED9 100%);
+            color: white;
+            border: 2px solid transparent;
+        }
+        
+        .btn-telegram:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(42, 171, 238, 0.4);
+            background: linear-gradient(135deg, #229ED9 0%, #2AABEE 100%);
+        }
+        
+        .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            vertical-align: middle;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            padding-top: 32px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-number {
+            color: #ff6b35;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .partner-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 107, 53, 0.1);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            color: #ff6b35;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .partner-badge.visible {
+            display: block;
+        }
+        
+        .lang-switcher {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+        
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.7);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .lang-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .lang-btn.active {
+            background: rgba(255, 107, 53, 0.2);
+            border-color: #ff6b35;
+            color: #ff6b35;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 32px 24px;
+            }
+            
+            h1 {
+                font-size: 28px;
+            }
+            
+            .subtitle {
+                font-size: 14px;
+            }
+            
+            .btn {
+                padding: 14px 24px;
+                font-size: 15px;
+            }
+            
+            .stats {
+                gap: 16px;
+            }
+            
+            .stat-number {
+                font-size: 20px;
+            }
+        }
+        
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(26, 26, 26, 0.95);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .loading.active {
+            display: flex;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 107, 53, 0.2);
+            border-top: 3px solid #ff6b35;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+    
+    <div class="lang-switcher">
+        <button class="lang-btn active" id="langEN" onclick="setLanguage('en')">
+            <span style="font-size: 20px; margin-right: 6px;">🇬🇧</span> EN
+        </button>
+        <button class="lang-btn" id="langRU" onclick="setLanguage('ru')">
+            <span style="font-size: 20px; margin-right: 6px;">🇷🇺</span> RU
+        </button>
+    </div>
+    
+    <div class="partner-badge" id="partnerBadge">
+        <span data-lang="partner-link">🤝 Partner link</span>
+    </div>
+    
+    <div class="container">
+        <div class="logo-container">
+            <img src="logo.png" class="logo" alt="Shiba Cars">
+        </div>
+        
+        <div class="badge" data-lang="badge">Premium Cars in Phuket</div>
+        
+        <h1 data-lang="title">Premium Car Rental</h1>
+        <p class="subtitle" data-lang="subtitle">Exclusive collection of cars for special moments. Contact us in a convenient way!</p>
+        
+        <div class="buttons">
+            <a href="#" class="btn btn-whatsapp" onclick="trackAndRedirect('whatsapp'); return false;">
+                <svg class="btn-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 10px;">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.149-.67.149-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414-.074-.123-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                </svg>
+                <span data-lang="whatsapp">Contact on WhatsApp</span>
+            </a>
+            
+            <a href="#" class="btn btn-telegram" onclick="trackAndRedirect('telegram'); return false;">
+                <svg class="btn-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 10px;">
+                    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                </svg>
+                <span data-lang="telegram">Contact on Telegram</span>
+            </a>
+        </div>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number">50+</div>
+                <div class="stat-label" data-lang="models">Models</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">3</div>
+                <div class="stat-label" data-lang="years">Years on market</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">98%</div>
+                <div class="stat-label" data-lang="satisfied">Satisfied clients</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Конфигурация
+        const API_URL = 'https://shibo-tg-backend-production.up.railway.app';
+        const WHATSAPP_NUMBER = '66959657805';
+        const TELEGRAM_CHANNEL = 'ShibaCars_Phuket';
+        let WHATSAPP_MESSAGE = 'Hello! I am interested in car rental in Phuket.';
+        let TELEGRAM_MESSAGE = 'Hello! I am interested in car rental in Phuket.';
+        
+        // Translations
+        const translations = {
+            en: {
+                'partner-link': '🤝 Partner link',
+                'badge': 'Premium Cars in Phuket',
+                'title': 'Premium Car Rental',
+                'subtitle': 'Exclusive collection of cars for special moments. Contact us in a convenient way!',
+                'whatsapp': 'Contact on WhatsApp',
+                'telegram': 'Contact on Telegram',
+                'models': 'Models',
+                'years': 'Years on market',
+                'satisfied': 'Satisfied clients',
+                'whatsapp-message': 'Hello! I am interested in car rental in Phuket.',
+                'telegram-message': 'Hello! I am interested in car rental in Phuket.'
+            },
+            ru: {
+                'partner-link': '🤝 Партнерская ссылка',
+                'badge': 'Премиум автомобили на Пхукете',
+                'title': 'Аренда премиальных автомобилей',
+                'subtitle': 'Эксклюзивная коллекция автомобилей для особых моментов. Свяжитесь с нами удобным способом!',
+                'whatsapp': 'Написать в WhatsApp',
+                'telegram': 'Написать в Telegram',
+                'models': 'Моделей',
+                'years': 'Года на рынке',
+                'satisfied': 'Довольных клиентов',
+                'whatsapp-message': 'Здравствуйте! Интересует аренда автомобиля на Пхукете.',
+                'telegram-message': 'Здравствуйте! Интересует аренда автомобиля на Пхукете.'
+            }
+        };
+        
+        // Get current language from localStorage or default to English
+        let currentLang = localStorage.getItem('language') || 'en';
+        
+        // Apply language on load
+        document.addEventListener('DOMContentLoaded', () => {
+            setLanguage(currentLang);
+        });
+        
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('language', lang);
+            
+            // Update button states
+            document.getElementById('langEN').classList.toggle('active', lang === 'en');
+            document.getElementById('langRU').classList.toggle('active', lang === 'ru');
+            
+            // Update messages
+            WHATSAPP_MESSAGE = translations[lang]['whatsapp-message'];
+            TELEGRAM_MESSAGE = translations[lang]['telegram-message'];
+            
+            // Update all text elements
+            document.querySelectorAll('[data-lang]').forEach(element => {
+                const key = element.getAttribute('data-lang');
+                if (translations[lang][key]) {
+                    element.textContent = translations[lang][key];
+                }
+            });
+            
+            // Update page title
+            document.title = lang === 'en' 
+                ? 'Shiba Cars - Premium Car Rental in Phuket'
+                : 'Shiba Cars - Премиум автомобили на Пхукете';
+        }
+        
+        // Получаем параметры из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const partnerCode = urlParams.get('ref') || urlParams.get('partner');
+        const clickId = urlParams.get('click');
+        
+        // Показываем badge если есть партнерский код
+        if (partnerCode) {
+            document.getElementById('partnerBadge').classList.add('visible');
+        }
+        
+        function trackAndRedirect(type) {
+            const loading = document.getElementById('loading');
+            loading.classList.add('active');
+            
+            // Если есть партнерский код и API настроен, отправляем статистику
+            if (partnerCode && API_URL !== 'https://shibo-cars-bot.up.railway.app') {
+                fetch(`${API_URL}/api/redirect`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        partnerCode: partnerCode,
+                        clickId: clickId,
+                        type: type
+                    })
+                })
+                .then(() => {
+                    redirectToMessenger(type);
+                })
+                .catch(error => {
+                    console.error('Error tracking:', error);
+                    redirectToMessenger(type);
+                });
+            } else {
+                redirectToMessenger(type);
+            }
+        }
+        
+        function redirectToMessenger(type) {
+            let url;
+            if (type === 'whatsapp') {
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                const waUrl = isMobile ? 'whatsapp://send' : 'https://wa.me';
+                url = `${waUrl}/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
+            } else {
+                url = `https://t.me/${TELEGRAM_CHANNEL}`;
+            }
+            window.location.href = url;
+        }
+        
+        // Отслеживаем просмотр страницы
+        if (partnerCode && API_URL !== 'https://shibo-cars-bot.up.railway.app') {
+            setTimeout(() => {
+                fetch(`${API_URL}/api/track-view`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        partnerCode: partnerCode,
+                        clickId: clickId
+                    })
+                }).catch(console.error);
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
