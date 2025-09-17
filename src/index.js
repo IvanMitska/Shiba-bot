@@ -240,11 +240,19 @@ async function startApplication() {
     // Serve static files for telegram-webapp (with subdirectories)
     app.use('/telegram-webapp', express.static(path.join(__dirname, '../telegram-webapp/build')));
 
-    // ВАЖНО: Сначала роуты, потом статика для корректной работы
-    app.use('/', trackingRoutes);
+    // Serve landing static files (logo.png and other assets)
+    // ВАЖНО: Это должно быть ПЕРЕД trackingRoutes для правильной обработки
+    app.use('/logo.png', (req, res) => {
+      res.sendFile(path.join(__dirname, '../landing-static/logo.png'));
+    });
 
-    // Serve static files for landing page (только для изображений и других ресурсов)
-    app.use('/logo.png', express.static(path.join(__dirname, '../landing-static/logo.png')));
+    // Также добавляем обработку для /r/logo.png из-за относительных путей
+    app.use('/r/logo.png', (req, res) => {
+      res.sendFile(path.join(__dirname, '../landing-static/logo.png'));
+    });
+
+    // ВАЖНО: Роуты после статики
+    app.use('/', trackingRoutes);
     app.use('/api', apiRoutes);
     app.use('/api/admin', adminRoutes);
     app.use('/api/webapp', webappRoutes);
