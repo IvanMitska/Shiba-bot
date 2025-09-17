@@ -39,7 +39,23 @@ class WebApp {
     
     this.app.use(compression());
     this.app.use(cors({
-      origin: process.env.WEBAPP_URL || true,
+      origin: (origin, callback) => {
+        // Разрешаем запросы с наших доменов
+        const allowedOrigins = [
+          process.env.WEBAPP_URL,
+          process.env.LANDING_DOMAIN,
+          process.env.DOMAIN,
+          'https://shiba-cars-phuket.com',
+          'https://www.shiba-cars-phuket.com',
+          'https://shibo-tg.up.railway.app'
+        ].filter(Boolean);
+
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(null, true); // В продакшене разрешаем все для партнерских ссылок
+        }
+      },
       credentials: true
     }));
     

@@ -89,7 +89,9 @@ const Partner = sequelize.define('Partner', {
 Partner.prototype.getPartnerLink = function() {
   // Используем отдельный домен для партнерских ссылок если он указан
   const domain = process.env.LANDING_DOMAIN || process.env.DOMAIN || 'https://localhost:3000';
-  return `${domain}/r/${this.uniqueCode}`;
+  // Убираем trailing slash если есть
+  const cleanDomain = domain.replace(/\/$/, '');
+  return `${cleanDomain}/r/${this.uniqueCode}`;
 };
 
 Partner.prototype.incrementClicks = async function(type = 'total') {

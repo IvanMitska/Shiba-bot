@@ -1,0 +1,35 @@
+# Переменные окружения для Railway
+# Скопируйте и вставьте в Railway Dashboard → Variables
+
+# Основные настройки
+NODE_ENV=production
+PORT=3000
+
+# Домены
+DOMAIN=https://shibo-tg.up.railway.app
+LANDING_DOMAIN=https://shiba-cars-phuket.com
+WEBAPP_URL=https://shibo-tg.up.railway.app/telegram-webapp
+
+# Telegram Bot
+BOT_TOKEN=8326608021:AAHT1G8YOVAq_RfWiq2m6NGnbRyAx9fhKDU
+BOT_USERNAME=SHIBA_CARS_PARTNERS_BOT
+
+# Контакты компании
+WHATSAPP_NUMBER=66959657805
+TELEGRAM_COMPANY_BOT=ShibaCars_Phuket
+
+# Безопасность (ОБЯЗАТЕЛЬНО ИЗМЕНИТЕ!)
+JWT_SECRET=shiba_cars_phuket_secret_2024_change_this_to_random_string
+
+# ID администраторов в Telegram (добавьте свой ID)
+ADMIN_TELEGRAM_IDS=
+
+# База данных (Railway предоставит автоматически)
+# DATABASE_URL будет автоматически
+
+# Логирование
+LOG_LEVEL=info
+
+# Rate limiting
+RATE_LIMIT_WINDOW_MS=60000
+RATE_LIMIT_MAX_REQUESTS=100
