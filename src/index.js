@@ -59,10 +59,13 @@ async function startApplication() {
     // Setup CORS
     const allowedOrigins = [
       'https://shiba-cars-partners.netlify.app',
+      'https://shiba-cars-phuket.com',
+      'https://www.shiba-cars-phuket.com',
       'http://localhost:3000',
       'http://localhost:3001',
       process.env.WEBAPP_URL,
       process.env.DOMAIN,
+      process.env.LANDING_DOMAIN,
       process.env.RAILWAY_PUBLIC_DOMAIN
     ].filter(Boolean);
     
@@ -96,6 +99,10 @@ async function startApplication() {
     
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
+
+    // Setup view engine for landing pages
+    app.set('view engine', 'ejs');
+    app.set('views', path.join(__dirname, 'web/views'));
     
     const limiter = rateLimit({
       windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 60000,
@@ -107,8 +114,8 @@ async function startApplication() {
     
     // Health check endpoint
     app.get('/health', (req, res) => {
-      res.json({ 
-        status: 'ok', 
+      res.json({
+        status: 'ok',
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
         service: 'shibo-cars-bot',
@@ -117,10 +124,95 @@ async function startApplication() {
         domain: process.env.DOMAIN
       });
     });
-    
+
+    // Root endpoint - check domain
+    app.get('/', (req, res) => {
+      const host = req.get('host');
+      console.log('Root request from host:', host);
+
+      if (host && (host.includes('shiba-cars-phuket.com') ||
+                   host === process.env.LANDING_DOMAIN?.replace('https://', '').replace('http://', ''))) {
+        // Landing page for custom domain
+        res.send(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>SHIBA CARS PHUKET - Partner Program</title>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <style>
+              body {
+                background: #000;
+                color: #FF8C00;
+                font-family: Arial, sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                margin: 0;
+                padding: 20px;
+              }
+              .container {
+                text-align: center;
+                max-width: 600px;
+              }
+              h1 {
+                font-size: clamp(32px, 8vw, 48px);
+                margin-bottom: 20px;
+                text-shadow: 0 0 20px rgba(255, 140, 0, 0.5);
+              }
+              p {
+                font-size: clamp(16px, 3vw, 20px);
+                color: #fff;
+                margin: 10px 0;
+              }
+              a {
+                color: #FF8C00;
+                text-decoration: none;
+                border-bottom: 2px solid transparent;
+                transition: border-color 0.3s;
+              }
+              a:hover {
+                border-bottom-color: #FF8C00;
+              }
+              .logo {
+                font-size: 60px;
+                margin-bottom: 20px;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="logo">🏎️</div>
+              <h1>SHIBA CARS PHUKET</h1>
+              <p>Premium Car Rental Service</p>
+              <p>Partner Program</p>
+              <br>
+              <p>WhatsApp: <a href="https://wa.me/66959657805">+66 95 965 7805</a></p>
+              <p>Telegram: <a href="https://t.me/ShibaCars_Phuket">@ShibaCars_Phuket</a></p>
+            </div>
+          </body>
+          </html>
+        `);
+      } else {
+        // API info for main domain
+        res.json({
+          name: 'Shibo Cars Partner Bot',
+          status: 'running',
+          endpoints: {
+            health: '/health',
+            tracking: '/r/:code',
+            api: '/api/*',
+            webapp: '/telegram-webapp',
+            webhook: '/webhook'
+          }
+        });
+      }
+    });
+
     // Test endpoints
     app.get('/test-bot', (req, res) => {
-      res.json({ 
+      res.json({
         message: 'Bot webhook endpoint is active',
         webhook_url: webhookUrl || 'Not configured'
       });
