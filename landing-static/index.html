@@ -414,7 +414,7 @@
     
     <script>
         // Конфигурация
-        const API_URL = 'https://shibo-tg-backend-production.up.railway.app';
+        // API URL убран - трекинг обрабатывается сервером
         const WHATSAPP_NUMBER = '66959657805';
         const TELEGRAM_CHANNEL = 'ShibaCars_Phuket';
         let WHATSAPP_MESSAGE = 'Hello! I am interested in car rental in Phuket.';
@@ -498,27 +498,11 @@
             const loading = document.getElementById('loading');
             loading.classList.add('active');
             
-            // Если есть партнерский код и API настроен, отправляем статистику
-            if (partnerCode && API_URL !== 'https://shibo-cars-bot.up.railway.app') {
-                fetch(`${API_URL}/api/redirect`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        partnerCode: partnerCode,
-                        clickId: clickId,
-                        type: type
-                    })
-                })
-                .then(() => {
-                    redirectToMessenger(type);
-                })
-                .catch(error => {
-                    console.error('Error tracking:', error);
-                    redirectToMessenger(type);
-                });
+            // Если сервер внедрил функцию trackRedirect, используем её
+            if (typeof trackRedirect === 'function') {
+                trackRedirect(type);
             } else {
+                // Иначе просто перенаправляем
                 redirectToMessenger(type);
             }
         }
@@ -535,21 +519,7 @@
             window.location.href = url;
         }
         
-        // Отслеживаем просмотр страницы
-        if (partnerCode && API_URL !== 'https://shibo-cars-bot.up.railway.app') {
-            setTimeout(() => {
-                fetch(`${API_URL}/api/track-view`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        partnerCode: partnerCode,
-                        clickId: clickId
-                    })
-                }).catch(console.error);
-            }, 1000);
-        }
+        // Трекинг просмотров обрабатывается сервером при загрузке страницы
     </script>
 </body>
 </html>
