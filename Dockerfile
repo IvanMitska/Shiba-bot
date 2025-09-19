@@ -39,6 +39,9 @@ COPY --from=builder /app/webapp/build ./webapp/build
 # Copy telegram-webapp build directly from repo (pre-built)
 COPY telegram-webapp/build ./telegram-webapp/build
 
+# Copy landing static files
+COPY --from=builder /app/landing-static ./landing-static
+
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 && \
