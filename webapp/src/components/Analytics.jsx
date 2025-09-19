@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
-import { motion } from 'framer-motion';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -44,11 +43,7 @@ const Analytics = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full"
-        />
+        <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -140,11 +135,7 @@ const Analytics = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="card"
-      >
+      <div className="card">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Аналитика</h1>
           <select
@@ -185,39 +176,26 @@ const Analytics = () => {
             <p className="text-sm text-gray-600">Стран</p>
           </div>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
+      <div
         className="card"
       >
         <h2 className="text-xl font-semibold mb-4">Переходы по дням</h2>
         <div className="h-64">
           <Line data={dailyChartData} options={chartOptions} />
         </div>
-      </motion.div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="card"
-        >
+        <div className="card">
           <h2 className="text-xl font-semibold mb-4">Активность по часам</h2>
           <div className="h-64">
             <Bar data={hourlyChartData} options={chartOptions} />
           </div>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
-          className="card"
-        >
+        <div className="card">
           <h2 className="text-xl font-semibold mb-4">Выбор мессенджера</h2>
           <div className="h-64 flex items-center justify-center">
             <div className="w-48 h-48">
@@ -236,13 +214,10 @@ const Analytics = () => {
               />
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
+      <div
         className="card"
       >
         <h2 className="text-xl font-semibold mb-4">География переходов</h2>
@@ -251,27 +226,19 @@ const Analytics = () => {
             .sort((a, b) => b[1] - a[1])
             .slice(0, 8)
             .map(([country, count], index) => (
-              <motion.div
+              <div
                 key={country}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4 + index * 0.05 }}
                 className="p-3 bg-gray-50 rounded-lg text-center"
               >
                 <p className="font-semibold text-gray-800">{country}</p>
                 <p className="text-2xl font-bold text-telegram-blue">{count}</p>
-              </motion.div>
+              </div>
             ))}
         </div>
-      </motion.div>
+      </div>
 
       {Object.keys(data?.deviceStats || {}).length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="card"
-        >
+        <div className="card">
           <h2 className="text-xl font-semibold mb-4">Устройства</h2>
           <div className="h-64 flex items-center justify-center">
             <div className="w-48 h-48">
@@ -290,7 +257,7 @@ const Analytics = () => {
               />
             </div>
           </div>
-        </motion.div>
+        </div>
       )}
     </div>
   );

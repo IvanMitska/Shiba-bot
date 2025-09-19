@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
-import { motion } from 'framer-motion';
 import { FiCopy, FiRefreshCw, FiTrendingUp, FiUsers, FiMousePointer, FiEye, FiShare2 } from 'react-icons/fi';
 import { FaWhatsapp, FaTelegram } from 'react-icons/fa';
 import toast from 'react-hot-toast';
@@ -55,11 +54,7 @@ const Dashboard = () => {
   if (infoLoading || statsLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-16 h-16 border-4 border-primary-orange border-t-transparent rounded-full"
-        />
+        <div className="w-16 h-16 border-4 border-primary-orange border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -91,26 +86,17 @@ const Dashboard = () => {
 
       <div className="container mx-auto px-4 py-6 space-y-6">
         {/* Welcome Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-dark-card rounded-2xl p-6 border border-dark-border"
-        >
+        <div className="bg-dark-card rounded-2xl p-6 border border-dark-border">
           <h2 className="text-2xl font-bold text-white mb-2">
             Добро пожаловать, {partner?.firstName || 'Партнер'}!
           </h2>
           <p className="text-dark-text-secondary">
             Управляйте своими партнерскими ссылками
           </p>
-        </motion.div>
+        </div>
 
         {/* Partner Link Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-gradient-to-r from-primary-orange to-primary-orange-dark rounded-2xl p-6"
-        >
+        <div className="bg-gradient-to-r from-primary-orange to-primary-orange-dark rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-white font-semibold text-lg">Ваша партнерская ссылка</h3>
             <div className="flex space-x-2">
@@ -135,14 +121,11 @@ const Dashboard = () => {
               {partnerInfo?.data?.partnerLink || 'Загрузка...'}
             </code>
           </div>
-        </motion.div>
+        </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
+          <div
             className="bg-dark-card rounded-2xl p-6 border border-dark-border"
           >
             <div className="flex items-center justify-between mb-2">
@@ -159,12 +142,9 @@ const Dashboard = () => {
               {statistics?.totalClicks || 0}
             </div>
             <div className="text-dark-text-secondary text-sm">Всего кликов</div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 }}
+          <div
             className="bg-dark-card rounded-2xl p-6 border border-dark-border"
           >
             <div className="flex items-center justify-between mb-2">
@@ -181,12 +161,9 @@ const Dashboard = () => {
               {statistics?.uniqueVisitors || 0}
             </div>
             <div className="text-dark-text-secondary text-sm">Уникальных посетителей</div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4 }}
+          <div
             className="bg-dark-card rounded-2xl p-6 border border-dark-border"
           >
             <div className="flex items-center justify-between mb-2">
@@ -203,12 +180,9 @@ const Dashboard = () => {
               {statistics?.whatsappClicks || 0}
             </div>
             <div className="text-dark-text-secondary text-sm">WhatsApp переходы</div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5 }}
+          <div
             className="bg-dark-card rounded-2xl p-6 border border-dark-border"
           >
             <div className="flex items-center justify-between mb-2">
@@ -225,14 +199,11 @@ const Dashboard = () => {
               {statistics?.telegramClicks || 0}
             </div>
             <div className="text-dark-text-secondary text-sm">Telegram переходы</div>
-          </motion.div>
+          </div>
         </div>
 
         {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
+        <div
           className="bg-dark-card rounded-2xl p-6 border border-dark-border"
         >
           <h3 className="text-white font-semibold text-lg mb-4 flex items-center">
@@ -263,13 +234,10 @@ const Dashboard = () => {
               <span>История кликов</span>
             </button>
           </div>
-        </motion.div>
+        </div>
 
         {/* Recent Activity */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
+        <div
           className="bg-dark-card rounded-2xl p-6 border border-dark-border"
         >
           <h3 className="text-white font-semibold text-lg mb-4 flex items-center">
@@ -298,7 +266,7 @@ const Dashboard = () => {
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );
