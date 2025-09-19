@@ -147,7 +147,13 @@ const Dashboard = () => {
           >
             <div className="flex items-center justify-between mb-2">
               <FiMousePointer className="w-6 h-6 text-primary-orange" />
-              <span className="text-xs text-green-500 font-semibold">+12%</span>
+              {statistics?.changeStats?.totalClicksChange && (
+                <span className={`text-xs font-semibold ${
+                  statistics.changeStats.totalClicksChange >= 0 ? 'text-green-500' : 'text-red-500'
+                }`}>
+                  {statistics.changeStats.totalClicksChange >= 0 ? '+' : ''}{statistics.changeStats.totalClicksChange}%
+                </span>
+              )}
             </div>
             <div className="text-3xl font-bold text-white mb-1">
               {statistics?.totalClicks || 0}
@@ -163,7 +169,13 @@ const Dashboard = () => {
           >
             <div className="flex items-center justify-between mb-2">
               <FiUsers className="w-6 h-6 text-primary-orange" />
-              <span className="text-xs text-green-500 font-semibold">+8%</span>
+              {statistics?.changeStats?.uniqueVisitorsChange && (
+                <span className={`text-xs font-semibold ${
+                  statistics.changeStats.uniqueVisitorsChange >= 0 ? 'text-green-500' : 'text-red-500'
+                }`}>
+                  {statistics.changeStats.uniqueVisitorsChange >= 0 ? '+' : ''}{statistics.changeStats.uniqueVisitorsChange}%
+                </span>
+              )}
             </div>
             <div className="text-3xl font-bold text-white mb-1">
               {statistics?.uniqueVisitors || 0}
@@ -179,7 +191,13 @@ const Dashboard = () => {
           >
             <div className="flex items-center justify-between mb-2">
               <FaWhatsapp className="w-6 h-6 text-whatsapp-green" />
-              <span className="text-xs text-green-500 font-semibold">+15%</span>
+              {statistics?.changeStats?.whatsappClicksChange && (
+                <span className={`text-xs font-semibold ${
+                  statistics.changeStats.whatsappClicksChange >= 0 ? 'text-green-500' : 'text-red-500'
+                }`}>
+                  {statistics.changeStats.whatsappClicksChange >= 0 ? '+' : ''}{statistics.changeStats.whatsappClicksChange}%
+                </span>
+              )}
             </div>
             <div className="text-3xl font-bold text-white mb-1">
               {statistics?.whatsappClicks || 0}
@@ -195,7 +213,13 @@ const Dashboard = () => {
           >
             <div className="flex items-center justify-between mb-2">
               <FaTelegram className="w-6 h-6 text-telegram-blue" />
-              <span className="text-xs text-green-500 font-semibold">+5%</span>
+              {statistics?.changeStats?.telegramClicksChange && (
+                <span className={`text-xs font-semibold ${
+                  statistics.changeStats.telegramClicksChange >= 0 ? 'text-green-500' : 'text-red-500'
+                }`}>
+                  {statistics.changeStats.telegramClicksChange >= 0 ? '+' : ''}{statistics.changeStats.telegramClicksChange}%
+                </span>
+              )}
             </div>
             <div className="text-3xl font-bold text-white mb-1">
               {statistics?.telegramClicks || 0}

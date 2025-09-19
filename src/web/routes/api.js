@@ -147,17 +147,100 @@ router.get('/partner/stats', async (req, res) => {
     if (period === 'today') {
       const todayStart = startOfDay(new Date());
       const todayEnd = endOfDay(new Date());
+      const yesterdayStart = startOfDay(subDays(new Date(), 1));
+      const yesterdayEnd = endOfDay(subDays(new Date(), 1));
 
-      const todayClicks = await Click.count({
+      const [todayClicks, yesterdayClicks] = await Promise.all([
+        Click.count({
+          where: {
+            partnerId,
+            clickedAt: { [Op.between]: [todayStart, todayEnd] }
+          }
+        }),
+        Click.count({
+          where: {
+            partnerId,
+            clickedAt: { [Op.between]: [yesterdayStart, yesterdayEnd] }
+          }
+        })
+      ]);
+
+      const [
+        todayWhatsappClicks,
+        todayTelegramClicks,
+        yesterdayWhatsappClicks,
+        yesterdayTelegramClicks
+      ] = await Promise.all([
+        Click.count({
+          where: {
+            partnerId,
+            clickedAt: { [Op.between]: [todayStart, todayEnd] },
+            redirectType: 'whatsapp'
+          }
+        }),
+        Click.count({
+          where: {
+            partnerId,
+            clickedAt: { [Op.between]: [todayStart, todayEnd] },
+            redirectType: 'telegram'
+          }
+        }),
+        Click.count({
+          where: {
+            partnerId,
+            clickedAt: { [Op.between]: [yesterdayStart, yesterdayEnd] },
+            redirectType: 'whatsapp'
+          }
+        }),
+        Click.count({
+          where: {
+            partnerId,
+            clickedAt: { [Op.between]: [yesterdayStart, yesterdayEnd] },
+            redirectType: 'telegram'
+          }
+        })
+      ]);
+
+      // Уникальные посетители
+      const todayUniqueVisitors = await Click.count({
         where: {
           partnerId,
-          clickedAt: {
-            [Op.between]: [todayStart, todayEnd]
-          }
+          clickedAt: { [Op.between]: [todayStart, todayEnd] },
+          isUnique: true
         }
       });
 
-      return res.json({ todayClicks });
+      const yesterdayUniqueVisitors = await Click.count({
+        where: {
+          partnerId,
+          clickedAt: { [Op.between]: [yesterdayStart, yesterdayEnd] },
+          isUnique: true
+        }
+      });
+
+      // Вычисляем изменения в процентах
+      const calculateChange = (today, yesterday) => {
+        if (yesterday === 0) return today > 0 ? 100 : 0;
+        return Math.round(((today - yesterday) / yesterday) * 100);
+      };
+
+      const changeStats = {
+        totalClicksChange: calculateChange(todayClicks, yesterdayClicks),
+        uniqueVisitorsChange: calculateChange(todayUniqueVisitors, yesterdayUniqueVisitors),
+        whatsappClicksChange: calculateChange(todayWhatsappClicks, yesterdayWhatsappClicks),
+        telegramClicksChange: calculateChange(todayTelegramClicks, yesterdayTelegramClicks)
+      };
+
+      return res.json({
+        data: {
+          totalClicks: todayClicks,
+          uniqueVisitors: todayUniqueVisitors,
+          whatsappClicks: todayWhatsappClicks,
+          telegramClicks: todayTelegramClicks,
+          changeStats,
+          recentClicks: []
+        }
+      });
     }
 
     const stats = await trackingService.getPartnerStats(partnerId, period);
