@@ -7,6 +7,9 @@ startCommand = "npm start"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 
+[deploy.variables]
+DATABASE_URL = "${{Postgres.DATABASE_URL}}"
+
 [[services]]
 name = "web"
 port = 3000
