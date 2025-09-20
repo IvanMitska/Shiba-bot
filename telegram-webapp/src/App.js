@@ -19,8 +19,20 @@ function App() {
   // Scroll to top when tab changes
   const handleTabChange = (tabName) => {
     setActiveTab(tabName);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Мгновенная прокрутка вверх для надежности
+    window.scrollTo(0, 0);
+
+    // Также попробуем через document.documentElement
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+
     setIsHeaderVisible(true); // Show header when changing tabs
+
+    // Дополнительно через requestAnimationFrame для гарантии
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0);
+    });
   };
 
   // Handle scroll to hide/show header
@@ -183,6 +195,11 @@ function App() {
         setLoading(false);
       }
     };
+
+    // Прокрутка вверх при загрузке приложения
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
 
     // Задержка для предотвращения краша при быстрой загрузке
     setTimeout(initApp, 100);
