@@ -1,22 +1,75 @@
 import React, { useState, useEffect } from 'react';
 import { FaWhatsapp, FaTelegram, FaGlobe } from 'react-icons/fa';
+import axios from 'axios';
 
 const History = ({ data }) => {
   const [clicks, setClicks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [countryStats, setCountryStats] = useState({});
 
   useEffect(() => {
-    // Моковые данные без задержки для избежания анимации
-    const mockClicks = [
-      { id: 1, source: 'whatsapp', timestamp: new Date(), ip: '192.168.1.1', country: 'RU' },
-      { id: 2, source: 'telegram', timestamp: new Date(Date.now() - 3600000), ip: '192.168.1.2', country: 'KZ' },
-      { id: 3, source: 'direct', timestamp: new Date(Date.now() - 7200000), ip: '192.168.1.3', country: 'BY' },
-      { id: 4, source: 'whatsapp', timestamp: new Date(Date.now() - 10800000), ip: '192.168.1.4', country: 'RU' },
-      { id: 5, source: 'telegram', timestamp: new Date(Date.now() - 14400000), ip: '192.168.1.5', country: 'UA' },
-    ];
-    setClicks(mockClicks);
-    setLoading(false);
+    loadClicksData();
   }, [data]);
+
+  const loadClicksData = async () => {
+    try {
+      setLoading(true);
+
+      // Получаем токен авторизации из Telegram WebApp
+      const tg = window.Telegram?.WebApp;
+      const authToken = tg?.initData;
+
+      if (!authToken && !data) {
+        setClicks([]);
+        setCountryStats({});
+        setLoading(false);
+        return;
+      }
+
+      const apiUrl = process.env.REACT_APP_API_URL || window.location.origin + '/api';
+
+      // Загружаем последние клики
+      const clicksResponse = await axios.get(`${apiUrl}/partner/clicks`, {
+        headers: authToken ? {
+          'Authorization': `Bearer ${authToken}`
+        } : {},
+        params: {
+          limit: 20  // Последние 20 кликов
+        }
+      });
+
+      // Загружаем аналитику для географии
+      const analyticsResponse = await axios.get(`${apiUrl}/partner/analytics`, {
+        headers: authToken ? {
+          'Authorization': `Bearer ${authToken}`
+        } : {},
+        params: { days: 30 }  // За последние 30 дней
+      });
+
+      const realClicks = clicksResponse.data?.clicks || [];
+      const analytics = analyticsResponse.data;
+
+      // Преобразуем клики в нужный формат
+      const formattedClicks = realClicks.map(click => ({
+        id: click.id,
+        source: click.redirectType || 'direct',
+        timestamp: new Date(click.clickedAt),
+        country: click.country || 'Unknown',
+        ip: click.ipAddress
+      }));
+
+      setClicks(formattedClicks);
+      setCountryStats(analytics?.countryStats || {});
+
+    } catch (error) {
+      console.error('Error loading clicks data:', error);
+      // Fallback к пустым данным при ошибке
+      setClicks([]);
+      setCountryStats({});
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getSourceIcon = (source) => {
     switch (source) {
@@ -62,9 +115,47 @@ const History = ({ data }) => {
       'KZ': '🇰🇿',
       'BY': '🇧🇾',
       'UA': '🇺🇦',
-      'UZ': '🇺🇿'
+      'UZ': '🇺🇿',
+      'US': '🇺🇸',
+      'GB': '🇬🇧',
+      'DE': '🇩🇪',
+      'FR': '🇫🇷',
+      'TR': '🇹🇷',
+      'Unknown': '🌍'
     };
     return flags[country] || '🌍';
+  };
+
+  const getCountryName = (countryCode) => {
+    const names = {
+      'RU': 'Россия',
+      'KZ': 'Казахстан',
+      'BY': 'Беларусь',
+      'UA': 'Украина',
+      'UZ': 'Узбекистан',
+      'US': 'США',
+      'GB': 'Великобритания',
+      'DE': 'Германия',
+      'FR': 'Франция',
+      'TR': 'Турция',
+      'Unknown': 'Неизвестно'
+    };
+    return names[countryCode] || countryCode;
+  };
+
+  const calculateCountryPercentages = () => {
+    const totalClicks = Object.values(countryStats).reduce((sum, count) => sum + count, 0);
+
+    if (totalClicks === 0) return [];
+
+    return Object.entries(countryStats)
+      .sort(([,a], [,b]) => b - a) // Сортируем по убыванию количества
+      .slice(0, 5) // Берем топ 5 стран
+      .map(([country, count]) => ({
+        country,
+        count,
+        percentage: ((count / totalClicks) * 100).toFixed(1)
+      }));
   };
 
   if (loading) {
@@ -113,26 +204,20 @@ const History = ({ data }) => {
       <div className="history-card">
         <h3 className="history-title">География переходов</h3>
         <div className="geography-list">
-          <div className="geography-item">
-            <span className="country-label">🇷🇺 Россия</span>
-            <span className="country-value">45%</span>
-          </div>
-          <div className="geography-item">
-            <span className="country-label">🇰🇿 Казахстан</span>
-            <span className="country-value">25%</span>
-          </div>
-          <div className="geography-item">
-            <span className="country-label">🇧🇾 Беларусь</span>
-            <span className="country-value">15%</span>
-          </div>
-          <div className="geography-item">
-            <span className="country-label">🇺🇦 Украина</span>
-            <span className="country-value">10%</span>
-          </div>
-          <div className="geography-item">
-            <span className="country-label">🌍 Другие</span>
-            <span className="country-value">5%</span>
-          </div>
+          {calculateCountryPercentages().length === 0 ? (
+            <div className="empty-history">
+              Нет данных о географии переходов
+            </div>
+          ) : (
+            calculateCountryPercentages().map((countryData, index) => (
+              <div key={countryData.country} className="geography-item">
+                <span className="country-label">
+                  {getCountryFlag(countryData.country)} {getCountryName(countryData.country)}
+                </span>
+                <span className="country-value">{countryData.percentage}%</span>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
