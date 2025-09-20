@@ -1,11 +1,11 @@
 {
   "files": {
     "main.css": "/telegram-webapp/static/css/main.31353247.css",
-    "main.js": "/telegram-webapp/static/js/main.5b0215ab.js",
+    "main.js": "/telegram-webapp/static/js/main.e3af1357.js",
     "index.html": "/telegram-webapp/index.html"
   },
   "entrypoints": [
     "static/css/main.31353247.css",
-    "static/js/main.5b0215ab.js"
+    "static/js/main.e3af1357.js"
   ]
 }

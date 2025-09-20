@@ -13,6 +13,7 @@ import {
 } from 'chart.js';
 import { format, subDays } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import axios from 'axios';
 
 ChartJS.register(
   CategoryScale,
@@ -28,21 +29,83 @@ ChartJS.register(
 const Statistics = ({ data }) => {
   const [period, setPeriod] = useState('week');
   const [chartData, setChartData] = useState(null);
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    generateChartData();
+    loadAnalyticsData();
   }, [period, data]);
 
-  const generateChartData = () => {
-    const days = period === 'week' ? 7 : period === 'month' ? 30 : 90;
+  const loadAnalyticsData = async () => {
+    try {
+      setLoading(true);
+      const days = period === 'week' ? 7 : period === 'month' ? 30 : 90;
+
+      // Получаем токен авторизации из Telegram WebApp
+      const tg = window.Telegram?.WebApp;
+      const authToken = tg?.initData;
+
+      if (!authToken && !data) {
+        generateEmptyChartData(days);
+        return;
+      }
+
+      const apiUrl = process.env.REACT_APP_API_URL || window.location.origin + '/api';
+
+      const response = await axios.get(`${apiUrl}/partner/analytics`, {
+        headers: authToken ? {
+          'Authorization': `Bearer ${authToken}`
+        } : {},
+        params: { days }
+      });
+
+      const analytics = response.data;
+      setAnalyticsData(analytics);
+      generateChartDataFromAPI(analytics, days);
+
+    } catch (error) {
+      console.error('Error loading analytics:', error);
+      // Fallback to empty data
+      const days = period === 'week' ? 7 : period === 'month' ? 30 : 90;
+      generateEmptyChartData(days);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateEmptyChartData = (days) => {
     const labels = [];
     const clicksData = [];
-    
+
     for (let i = days - 1; i >= 0; i--) {
       const date = subDays(new Date(), i);
       labels.push(format(date, 'd MMM', { locale: ru }));
-      // Здесь должны быть реальные данные из API
-      clicksData.push(Math.floor(Math.random() * 10));
+      clicksData.push(0);
+    }
+
+    setChartData({
+      labels,
+      datasets: [
+        {
+          label: 'Переходы',
+          data: clicksData,
+          borderColor: '#667eea',
+          backgroundColor: 'rgba(102, 126, 234, 0.1)',
+          tension: 0.4
+        }
+      ]
+    });
+  };
+
+  const generateChartDataFromAPI = (analytics, days) => {
+    const labels = [];
+    const clicksData = [];
+
+    for (let i = days - 1; i >= 0; i--) {
+      const date = subDays(new Date(), i);
+      const dateStr = format(date, 'yyyy-MM-dd');
+      labels.push(format(date, 'd MMM', { locale: ru }));
+      clicksData.push(analytics.dailyStats[dateStr] || 0);
     }
 
     setChartData({
@@ -64,11 +127,11 @@ const Statistics = ({ data }) => {
     datasets: [
       {
         data: [
-          data?.statistics?.whatsappClicks || 0,
-          data?.statistics?.telegramClicks || 0,
-          Math.max(0, (data?.statistics?.totalClicks || 0) - 
-            (data?.statistics?.whatsappClicks || 0) - 
-            (data?.statistics?.telegramClicks || 0))
+          analyticsData?.messengerStats?.whatsapp || data?.statistics?.whatsappClicks || 0,
+          analyticsData?.messengerStats?.telegram || data?.statistics?.telegramClicks || 0,
+          Math.max(0, (analyticsData?.totalClicks || data?.statistics?.totalClicks || 0) -
+            (analyticsData?.messengerStats?.whatsapp || data?.statistics?.whatsappClicks || 0) -
+            (analyticsData?.messengerStats?.telegram || data?.statistics?.telegramClicks || 0))
         ],
         backgroundColor: ['#25D366', '#0088cc', '#667eea'],
         borderWidth: 0
@@ -152,7 +215,17 @@ const Statistics = ({ data }) => {
         </div>
 
         <div className="chart-container">
-          {chartData && <Line data={chartData} options={chartOptions} />}
+          {loading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+              <div className="spinner"></div>
+            </div>
+          ) : chartData ? (
+            <Line data={chartData} options={chartOptions} />
+          ) : (
+            <div style={{ textAlign: 'center', color: 'var(--tg-theme-hint-color)', padding: '40px 0' }}>
+              Нет данных для отображения
+            </div>
+          )}
         </div>
       </div>
 
@@ -171,20 +244,22 @@ const Statistics = ({ data }) => {
         </h3>
         <div style={{ display: 'grid', gap: '12px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-            <span style={{ fontSize: '14px', color: 'var(--tg-theme-hint-color)' }}>Средний CTR</span>
-            <span style={{ fontSize: '14px', fontWeight: 'bold' }}>2.3%</span>
+            <span style={{ fontSize: '14px', color: 'var(--tg-theme-hint-color)' }}>Всего кликов</span>
+            <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{analyticsData?.totalClicks || data?.statistics?.totalClicks || 0}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-            <span style={{ fontSize: '14px', color: 'var(--tg-theme-hint-color)' }}>Конверсия в заявки</span>
-            <span style={{ fontSize: '14px', fontWeight: 'bold' }}>15%</span>
+            <span style={{ fontSize: '14px', color: 'var(--tg-theme-hint-color)' }}>Конверсия в действия</span>
+            <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{analyticsData?.conversionRate || 0}%</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-            <span style={{ fontSize: '14px', color: 'var(--tg-theme-hint-color)' }}>Активных дней</span>
-            <span style={{ fontSize: '14px', fontWeight: 'bold' }}>23</span>
+            <span style={{ fontSize: '14px', color: 'var(--tg-theme-hint-color)' }}>Уникальных посетителей</span>
+            <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{analyticsData?.uniqueVisitors || 0}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0' }}>
-            <span style={{ fontSize: '14px', color: 'var(--tg-theme-hint-color)' }}>Лучший день</span>
-            <span style={{ fontSize: '14px', fontWeight: 'bold' }}>Понедельник</span>
+            <span style={{ fontSize: '14px', color: 'var(--tg-theme-hint-color)' }}>Период</span>
+            <span style={{ fontSize: '14px', fontWeight: 'bold' }}>
+              {period === 'week' ? '7 дней' : period === 'month' ? '30 дней' : '90 дней'}
+            </span>
           </div>
         </div>
       </div>
