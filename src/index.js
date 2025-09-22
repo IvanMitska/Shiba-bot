@@ -24,7 +24,8 @@ async function startApplication() {
     console.log('DOMAIN:', process.env.DOMAIN || 'Not set');
     
     // Initialize database
-    await syncDatabase(process.env.NODE_ENV === 'development');
+    // Never force recreate database, only sync
+    await syncDatabase(false);
     console.log('✅ Database initialized');
     
     // Create Express app

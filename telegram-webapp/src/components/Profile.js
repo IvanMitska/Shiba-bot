@@ -18,7 +18,7 @@ const Profile = ({ data }) => {
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return '16 сентября 2025';
+    if (!dateString) return 'Не указана';
     const date = new Date(dateString);
     const months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
                    'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];

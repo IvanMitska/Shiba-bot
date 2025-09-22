@@ -103,11 +103,39 @@ function App() {
             // Настраиваем axios для отправки токена
             const apiUrl = process.env.REACT_APP_API_URL || window.location.origin + '/api';
 
-            const response = await axios.get(`${apiUrl}/partner/info`, {
-              headers: {
-                'Authorization': `Bearer ${authToken}`
+            let response;
+            try {
+              // Сначала пробуем получить данные партнера
+              response = await axios.get(`${apiUrl}/partner/info`, {
+                headers: {
+                  'Authorization': `Bearer ${authToken}`
+                }
+              });
+            } catch (infoError) {
+              // Если партнер не найден, регистрируем его
+              if (infoError.response?.status === 401 || infoError.response?.status === 404) {
+                console.log('Partner not found, registering...');
+                setDebugInfo('Registering new partner...');
+
+                const registerResponse = await axios.post(`${apiUrl}/partner/register`, {
+                  initData: authToken
+                });
+
+                if (registerResponse.data.success) {
+                  // После регистрации получаем обновленные данные
+                  response = await axios.get(`${apiUrl}/partner/info`, {
+                    headers: {
+                      'Authorization': `Bearer ${authToken}`
+                    }
+                  });
+                  setDebugInfo('Registration successful');
+                } else {
+                  throw new Error('Registration failed');
+                }
+              } else {
+                throw infoError;
               }
-            });
+            }
 
             if (response.data) {
               // Получаем статистику за сегодня
@@ -125,10 +153,10 @@ function App() {
                 partnerLink: response.data.partnerLink,
                 registrationDate: response.data.createdAt,
                 statistics: {
-                  todayClicks: statsResponse.data?.todayClicks || 0,
+                  todayClicks: statsResponse.data?.data?.totalClicks || 0,
                   totalClicks: response.data.totalClicks || 0,
-                  whatsappClicks: response.data.whatsappClicks || 0,
-                  telegramClicks: response.data.telegramClicks || 0,
+                  whatsappClicks: statsResponse.data?.data?.whatsappClicks || response.data.whatsappClicks || 0,
+                  telegramClicks: statsResponse.data?.data?.telegramClicks || response.data.telegramClicks || 0,
                   conversionRate: 0,
                   earnings: 0
                 }

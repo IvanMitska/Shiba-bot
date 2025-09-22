@@ -104,6 +104,76 @@ const authMiddleware = async (req, res, next) => {
   }
 };
 
+// Registration endpoint - available without auth
+router.post('/partner/register', async (req, res) => {
+  try {
+    const { initData } = req.body;
+
+    if (!initData) {
+      return res.status(400).json({ error: 'Missing initData' });
+    }
+
+    // Verify Telegram Web App data
+    const user = verifyTelegramWebAppData(initData);
+    if (!user || !user.id) {
+      return res.status(401).json({ error: 'Invalid Telegram data' });
+    }
+
+    const telegramId = user.id;
+    const { username, first_name, last_name } = user;
+
+    // Check if partner already exists
+    let [partner, created] = await Partner.findOrCreate({
+      where: { telegramId },
+      defaults: {
+        telegramId,
+        username,
+        firstName: first_name,
+        lastName: last_name,
+        isActive: true
+      }
+    });
+
+    if (!created && !partner.isActive) {
+      return res.status(403).json({ error: 'Account is deactivated' });
+    }
+
+    if (!created) {
+      // Update user info if partner already exists
+      await partner.update({
+        username,
+        firstName: first_name,
+        lastName: last_name
+      });
+    }
+
+    const partnerLink = partner.getPartnerLink();
+
+    logger.info(`Partner ${created ? 'registered' : 'logged in'}: ${telegramId} (@${username})`);
+
+    res.json({
+      success: true,
+      partner: {
+        id: partner.id,
+        uniqueCode: partner.uniqueCode,
+        username: partner.username,
+        firstName: partner.firstName,
+        lastName: partner.lastName,
+        partnerLink,
+        totalClicks: partner.totalClicks,
+        uniqueVisitors: partner.uniqueVisitors,
+        whatsappClicks: partner.whatsappClicks,
+        telegramClicks: partner.telegramClicks,
+        createdAt: partner.createdAt,
+        isNewUser: created
+      }
+    });
+  } catch (error) {
+    logger.error('Error in partner registration:', error);
+    res.status(500).json({ error: 'Registration failed' });
+  }
+});
+
 router.use(authMiddleware);
 
 router.get('/partner/info', async (req, res) => {

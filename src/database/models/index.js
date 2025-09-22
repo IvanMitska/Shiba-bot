@@ -23,13 +23,13 @@ const syncDatabase = async (force = false) => {
   try {
     await sequelize.authenticate();
     console.log('Database connection established successfully.');
-    
-    await sequelize.sync({ force, alter: !force });
+
+    // Only create tables if they don't exist, never drop or alter
+    await sequelize.sync({ force: false, alter: false });
     console.log('Database synchronized successfully.');
-    
-    if (force) {
-      await initializeDefaultSettings();
-    }
+
+    // Always ensure default settings exist
+    await initializeDefaultSettings();
   } catch (error) {
     console.error('Unable to connect to the database:', error);
     throw error;
