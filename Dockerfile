@@ -5,10 +5,12 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 COPY webapp/package*.json ./webapp/
+COPY telegram-webapp/package*.json ./telegram-webapp/
 
 # Install all dependencies for build
 RUN npm install
 RUN cd webapp && npm install
+RUN cd telegram-webapp && npm install --legacy-peer-deps
 
 # Copy source code
 COPY . .
@@ -16,8 +18,8 @@ COPY . .
 # Build webapp
 RUN cd webapp && npm run build
 
-# For telegram-webapp, we'll use pre-built files from the repo
-# since they're already included
+# Build telegram-webapp
+RUN cd telegram-webapp && npm run build
 
 FROM node:18-alpine
 
@@ -29,15 +31,13 @@ RUN apk add --no-cache dumb-init
 # Copy package files
 COPY package*.json ./
 
-# Install only production dependencies
-RUN npm ci --only=production
+# Install only production dependencies (without postinstall)
+RUN npm ci --only=production --ignore-scripts
 
 # Copy built application from builder stage
 COPY --from=builder /app/src ./src
 COPY --from=builder /app/webapp/build ./webapp/build
-
-# Copy telegram-webapp build directly from repo (pre-built)
-COPY telegram-webapp/build ./telegram-webapp/build
+COPY --from=builder /app/telegram-webapp/build ./telegram-webapp/build
 
 # Copy landing static files
 COPY --from=builder /app/landing-static ./landing-static

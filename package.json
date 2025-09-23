@@ -7,7 +7,6 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "build": "echo 'Building webapp...' && cd telegram-webapp && npm install --legacy-peer-deps && npm run build && cd ..",
-    "postinstall": "cd telegram-webapp && npm install --legacy-peer-deps && cd ..",
     "migrate": "node src/database/migrations/migrate.js",
     "build:webapp": "cd webapp && npm run build",
     "build:telegram-webapp": "cd telegram-webapp && npm install --legacy-peer-deps && npm run build",
