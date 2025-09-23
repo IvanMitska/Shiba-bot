@@ -51,7 +51,8 @@ USER nodejs
 
 # Set environment variables for Railway
 ENV NODE_ENV=production
-ENV PORT=3000
+# Railway will provide PORT environment variable
+ENV PORT=${PORT:-3000}
 
 EXPOSE 3000
 
@@ -60,4 +61,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"
 
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "src/index.js"]
+# Temporarily use simple server for debugging
+CMD ["node", "src/server.js"]
