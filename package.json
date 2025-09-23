@@ -6,10 +6,11 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "build": "npm run build:telegram-webapp",
+    "build": "echo 'Building webapp...' && cd telegram-webapp && npm install --legacy-peer-deps && npm run build && cd ..",
+    "postinstall": "cd telegram-webapp && npm install --legacy-peer-deps && cd ..",
     "migrate": "node src/database/migrations/migrate.js",
     "build:webapp": "cd webapp && npm run build",
-    "build:telegram-webapp": "cd telegram-webapp && npm install && npm run build",
+    "build:telegram-webapp": "cd telegram-webapp && npm install --legacy-peer-deps && npm run build",
     "setup": "npm install && cd webapp && npm install && cd .. && cd telegram-webapp && npm install && cd ..",
     "test": "jest",
     "test:webapp": "node test-webapp.js"
