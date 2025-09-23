@@ -31,8 +31,12 @@ RUN apk add --no-cache dumb-init
 # Copy package files
 COPY package*.json ./
 
-# Install only production dependencies (without postinstall)
-RUN npm ci --only=production --ignore-scripts
+# Install build tools for native modules
+RUN apk add --no-cache python3 make g++
+
+# Install only production dependencies and rebuild native modules
+RUN npm ci --only=production --ignore-scripts && \
+    npm rebuild sqlite3 --build-from-source
 
 # Copy built application from builder stage
 COPY --from=builder /app/src ./src
@@ -61,5 +65,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"
 
 ENTRYPOINT ["dumb-init", "--"]
-# Temporarily use simple server for debugging
-CMD ["node", "src/server.js"]
+CMD ["node", "src/index.js"]
