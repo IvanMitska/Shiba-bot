@@ -175,7 +175,7 @@ function App() {
             const testData = {
               partnerId: 'TEST123',
               partnerLink: `${currentDomain}/r/TEST123`,
-              registrationDate: new Date().toISOString(),
+              registrationDate: '2024-09-01T00:00:00.000Z', // Фиксированная дата для тестового режима
               statistics: {
                 todayClicks: 5,
                 totalClicks: 42,
@@ -200,7 +200,7 @@ function App() {
           const testData = {
             partnerId: String(telegramId || 'TEST123'),
             partnerLink: `${currentDomain}/r/${telegramId || 'TEST123'}`,
-            registrationDate: new Date().toISOString(),
+            registrationDate: '2024-09-01T00:00:00.000Z', // Фиксированная дата для fallback
             statistics: {
               todayClicks: 0,
               totalClicks: 0,
