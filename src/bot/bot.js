@@ -40,42 +40,35 @@ class PartnerBot {
       }
       
       if (!created) {
-        await partner.update({
-          username,
-          firstName: first_name,
-          lastName: last_name
-        });
+        // Обновляем только если данные действительно изменились
+        const updates = {};
+        if (partner.username !== username) updates.username = username;
+        if (partner.firstName !== first_name) updates.firstName = first_name;
+        if (partner.lastName !== last_name) updates.lastName = last_name;
+
+        // Обновляем только при наличии изменений
+        if (Object.keys(updates).length > 0) {
+          await partner.update(updates);
+        }
       }
-      
-      const partnerLink = partner.getPartnerLink();
-      const stats = await formatPartnerStats(partner);
       
       const welcomeMessage = created
         ? `👋 Добро пожаловать в систему партнеров аренды транспорта!`
         : `👋 С возвращением, ${first_name || 'партнер'}!`;
-      
-      const message = `
-${welcomeMessage}
 
-📊 Ваша статистика доступна в удобном веб-приложении!
+      const message = welcomeMessage;
 
-${stats}
-
-Используйте кнопки ниже:`;
-      
-      // Создаем кнопки с Web App
+      // Создаем кнопку с Web App
       // Используем правильный URL для Railway
       const domain = process.env.RAILWAY_PUBLIC_DOMAIN || process.env.DOMAIN || 'localhost:3000';
       const protocol = domain.includes('localhost') ? 'http' : 'https';
       const webAppUrl = process.env.WEBAPP_URL || `${protocol}://${domain}/telegram-webapp`;
-      
+
       // Логируем URL для отладки
       logger.info(`Web App URL: ${webAppUrl}`);
-      
+
       const keyboard = Markup.inlineKeyboard([
-        [Markup.button.webApp('📊 Открыть панель статистики', webAppUrl)],
-        [Markup.button.callback('📋 Показать ссылку', 'show_link')],
-        [Markup.button.callback('🔄 Обновить', 'refresh_stats')]
+        [{ text: '📊 Открыть приложение', web_app: { url: webAppUrl } }]
       ]);
       
       await ctx.replyWithMarkdown(message, keyboard);

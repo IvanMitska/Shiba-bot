@@ -29,7 +29,7 @@ export const fetchPartnerData = async (telegramId) => {
     return {
       partnerId: telegramId,
       partnerLink: `https://shiba-cars-partners.netlify.app/r/${generatePartnerCode(telegramId)}`,
-      registrationDate: new Date().toISOString(),
+      registrationDate: '2025-09-17T04:37:12.568Z', // Фиксированная дата для корректного отображения
       statistics: {
         todayClicks: 5,
         totalClicks: 42,

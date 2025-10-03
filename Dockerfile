@@ -35,7 +35,7 @@ COPY package*.json ./
 RUN apk add --no-cache python3 make g++
 
 # Install only production dependencies and rebuild native modules
-RUN npm ci --only=production --ignore-scripts && \
+RUN npm install --omit=dev && \
     npm rebuild sqlite3 --build-from-source
 
 # Copy built application from builder stage
@@ -60,8 +60,8 @@ ENV PORT=${PORT:-3000}
 
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+# Health check - optimized for Railway
+HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=5 \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"
 
 ENTRYPOINT ["dumb-init", "--"]

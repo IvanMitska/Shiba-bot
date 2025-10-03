@@ -167,10 +167,68 @@ async function startApplication() {
       });
     });
     
+    // Import routes FIRST before bot initialization
+    const trackingRoutes = require('./web/routes/tracking');
+    const apiRoutes = require('./web/routes/api');
+    const adminRoutes = require('./web/routes/admin');
+    const webappRoutes = require('./web/routes/webapp');
+
+    // Serve static files for telegram-webapp (with subdirectories)
+    app.use('/telegram-webapp', express.static(path.join(__dirname, '../telegram-webapp/build')));
+
+    // Serve landing static files (logo.png and other assets)
+    // ВАЖНО: Это должно быть ПЕРЕД trackingRoutes для правильной обработки
+    app.use('/logo.png', (req, res) => {
+      res.sendFile(path.join(__dirname, '../landing-static/logo.png'));
+    });
+
+    // Также добавляем обработку для /r/logo.png из-за относительных путей
+    app.use('/r/logo.png', (req, res) => {
+      res.sendFile(path.join(__dirname, '../landing-static/logo.png'));
+    });
+
+    // ВАЖНО: Роуты после статики
+    app.use('/', trackingRoutes);
+    app.use('/api', apiRoutes);
+    app.use('/api/admin', adminRoutes);
+    app.use('/api/webapp', webappRoutes);
+
+    // Handle React Router for telegram-webapp
+    app.get('/telegram-webapp/*', (req, res) => {
+      res.sendFile(path.join(__dirname, '../telegram-webapp/build/index.html'));
+    });
+
+    // 404 handler
+    app.use((req, res, next) => {
+      console.log('404 Not found:', req.method, req.url);
+      res.status(404).json({ error: 'Not found' });
+    });
+
+    // Error handler
+    app.use((err, req, res, next) => {
+      logger.error('Unhandled error:', err);
+
+      const status = err.status || 500;
+      const message = err.message || 'Internal server error';
+
+      res.status(status).json({
+        error: message,
+        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+      });
+    });
+
+    // Start server BEFORE bot initialization
+    const server = app.listen(port, () => {
+      console.log(`✅ Server running on port ${port}`);
+      console.log(`🌐 Check health: http://localhost:${port}/health`);
+      console.log(`🤖 Check bot: http://localhost:${port}/test-bot`);
+      logger.info(`Web server started on port ${port}`);
+    });
+
     let bot = null;
     let webhookUrl = null;
-    
-    // Initialize Telegram bot with Web App support
+
+    // Initialize Telegram bot with Web App support AFTER server is running
     if (process.env.BOT_TOKEN) {
       console.log('Initializing Telegram bot with Web App support...');
       
@@ -231,64 +289,6 @@ async function startApplication() {
     } else {
       console.log('⚠️ BOT_TOKEN not provided, running without bot');
     }
-    
-    // Import routes
-    const trackingRoutes = require('./web/routes/tracking');
-    const apiRoutes = require('./web/routes/api');
-    const adminRoutes = require('./web/routes/admin');
-    const webappRoutes = require('./web/routes/webapp');
-    
-    // Serve static files for telegram-webapp (with subdirectories)
-    app.use('/telegram-webapp', express.static(path.join(__dirname, '../telegram-webapp/build')));
-
-    // Serve landing static files (logo.png and other assets)
-    // ВАЖНО: Это должно быть ПЕРЕД trackingRoutes для правильной обработки
-    app.use('/logo.png', (req, res) => {
-      res.sendFile(path.join(__dirname, '../landing-static/logo.png'));
-    });
-
-    // Также добавляем обработку для /r/logo.png из-за относительных путей
-    app.use('/r/logo.png', (req, res) => {
-      res.sendFile(path.join(__dirname, '../landing-static/logo.png'));
-    });
-
-    // ВАЖНО: Роуты после статики
-    app.use('/', trackingRoutes);
-    app.use('/api', apiRoutes);
-    app.use('/api/admin', adminRoutes);
-    app.use('/api/webapp', webappRoutes);
-    
-    // Handle React Router for telegram-webapp
-    app.get('/telegram-webapp/*', (req, res) => {
-      res.sendFile(path.join(__dirname, '../telegram-webapp/build/index.html'));
-    });
-    
-    // 404 handler
-    app.use((req, res, next) => {
-      console.log('404 Not found:', req.method, req.url);
-      res.status(404).json({ error: 'Not found' });
-    });
-    
-    // Error handler
-    app.use((err, req, res, next) => {
-      logger.error('Unhandled error:', err);
-      
-      const status = err.status || 500;
-      const message = err.message || 'Internal server error';
-      
-      res.status(status).json({
-        error: message,
-        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-      });
-    });
-    
-    // Start server
-    const server = app.listen(port, () => {
-      console.log(`✅ Server running on port ${port}`);
-      console.log(`🌐 Check health: http://localhost:${port}/health`);
-      console.log(`🤖 Check bot: http://localhost:${port}/test-bot`);
-      logger.info(`Web server started on port ${port}`);
-    });
     
     // Heartbeat logging
     setInterval(() => {
