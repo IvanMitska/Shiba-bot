@@ -7,19 +7,19 @@ COPY package*.json ./
 COPY webapp/package*.json ./webapp/
 COPY telegram-webapp/package*.json ./telegram-webapp/
 
-# Install all dependencies for build
-RUN npm install
-RUN cd webapp && npm install
-RUN cd telegram-webapp && npm install --legacy-peer-deps
+# Install all dependencies for build with modern npm
+RUN npm ci --include=dev || npm install
+RUN cd webapp && npm ci --include=dev || npm install
+RUN cd telegram-webapp && npm ci --legacy-peer-deps --include=dev || npm install --legacy-peer-deps
 
 # Copy source code
 COPY . .
 
-# Build webapp
-RUN cd webapp && npm run build
+# Build webapp with CI environment variable
+RUN cd webapp && CI=false npm run build
 
-# Build telegram-webapp
-RUN cd telegram-webapp && npm run build
+# Build telegram-webapp with CI environment variable
+RUN cd telegram-webapp && CI=false npm run build
 
 FROM node:18-alpine
 
@@ -35,7 +35,7 @@ COPY package*.json ./
 RUN apk add --no-cache python3 make g++
 
 # Install only production dependencies and rebuild native modules
-RUN npm install --omit=dev && \
+RUN npm ci --omit=dev || npm install --omit=dev && \
     npm rebuild sqlite3 --build-from-source
 
 # Copy built application from builder stage
