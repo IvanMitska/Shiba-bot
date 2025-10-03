@@ -172,10 +172,11 @@ function App() {
               ? 'http://localhost:3000'
               : 'https://shiba-cars-phuket.com';
 
+            // В тестовом режиме нет реальной даты регистрации
             const testData = {
               partnerId: 'TEST123',
               partnerLink: `${currentDomain}/r/TEST123`,
-              registrationDate: '2024-09-01T00:00:00.000Z', // Фиксированная дата для тестового режима
+              registrationDate: null, // Нет даты в тестовом режиме
               statistics: {
                 todayClicks: 5,
                 totalClicks: 42,
@@ -197,10 +198,11 @@ function App() {
             ? 'http://localhost:3000'
             : 'https://shiba-cars-phuket.com';
 
+          // При ошибке API данных о регистрации нет
           const testData = {
             partnerId: String(telegramId || 'TEST123'),
             partnerLink: `${currentDomain}/r/${telegramId || 'TEST123'}`,
-            registrationDate: '2024-09-01T00:00:00.000Z', // Фиксированная дата для fallback
+            registrationDate: null, // Нет данных о дате регистрации при ошибке API
             statistics: {
               todayClicks: 0,
               totalClicks: 0,
