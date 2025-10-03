@@ -2,6 +2,9 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
+# Install Python setuptools for building native modules
+RUN apk add --no-cache python3 py3-setuptools make g++
+
 # Copy package files
 COPY package*.json ./
 COPY webapp/package*.json ./webapp/
@@ -31,12 +34,12 @@ RUN apk add --no-cache dumb-init
 # Copy package files
 COPY package*.json ./
 
-# Install build tools for native modules
-RUN apk add --no-cache python3 make g++
+# Install build tools for native modules and Python setuptools for distutils
+RUN apk add --no-cache python3 py3-setuptools make g++
 
 # Install only production dependencies and rebuild native modules
-RUN npm ci --omit=dev || npm install --omit=dev && \
-    npm rebuild sqlite3 --build-from-source
+RUN npm ci --omit=dev || npm install --omit=dev
+RUN npm rebuild sqlite3 --build-from-source
 
 # Copy built application from builder stage
 COPY --from=builder /app/src ./src
