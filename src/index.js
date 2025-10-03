@@ -22,6 +22,8 @@ async function startApplication() {
     console.log('Railway Domain:', process.env.RAILWAY_PUBLIC_DOMAIN || 'Not set');
     console.log('WEBAPP_URL:', process.env.WEBAPP_URL || 'Not set');
     console.log('DOMAIN:', process.env.DOMAIN || 'Not set');
+    console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
+    console.log('Database type:', process.env.DATABASE_URL ? 'PostgreSQL' : 'SQLite');
     
     // Initialize database
     // Never force recreate database, only sync
