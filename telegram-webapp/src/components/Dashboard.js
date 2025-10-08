@@ -33,8 +33,13 @@ const Dashboard = ({ data }) => {
         window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
       }
 
-      // Открываем в новом окне
-      window.open(data.partnerLink, '_blank');
+      // Открываем через Telegram Web App API для корректной работы
+      if (window.Telegram?.WebApp?.openLink) {
+        window.Telegram.WebApp.openLink(data.partnerLink);
+      } else {
+        // Fallback для обычного браузера
+        window.open(data.partnerLink, '_blank');
+      }
     }
   };
 
@@ -96,23 +101,17 @@ const Dashboard = ({ data }) => {
           </div>
         </div>
 
-        <button className="button-primary copy-button" onClick={copyLink}>
-          {copied ? <FiCheck size={18} /> : <FiCopy size={18} />}
-          <span>{copied ? 'СКОПИРОВАНО!' : 'КОПИРОВАТЬ ССЫЛКУ'}</span>
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <button className="button-primary copy-button" onClick={copyLink}>
+            {copied ? <FiCheck size={18} /> : <FiCopy size={18} />}
+            <span>{copied ? 'СКОПИРОВАНО!' : 'КОПИРОВАТЬ ССЫЛКУ'}</span>
+          </button>
 
-        <button
-          className="button-primary"
-          onClick={openLanding}
-          style={{
-            marginTop: '12px',
-            background: 'linear-gradient(135deg, var(--shiba-orange) 0%, var(--shiba-orange-dark) 100%)',
-            border: '1px solid rgba(255,140,0,0.3)'
-          }}
-        >
-          <FiExternalLink size={18} />
-          <span>ОТКРЫТЬ ЛЕНДИНГ</span>
-        </button>
+          <button className="button-primary copy-button" onClick={openLanding}>
+            <FiExternalLink size={18} />
+            <span>ОТКРЫТЬ ЛЕНДИНГ</span>
+          </button>
+        </div>
       </div>
 
       {/* Stats Grid */}
