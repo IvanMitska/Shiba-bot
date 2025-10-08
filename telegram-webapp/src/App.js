@@ -167,10 +167,10 @@ function App() {
             }
           } else {
             // Тестовые данные для разработки
-            // Используем текущий домен или shiba-cars-phuket.com
+            // Используем текущий домен
             const currentDomain = window.location.hostname === 'localhost'
               ? 'http://localhost:3000'
-              : 'https://shiba-cars-phuket.com';
+              : `${window.location.protocol}//${window.location.host}`;
 
             // В тестовом режиме нет реальной даты регистрации
             const testData = {
@@ -193,10 +193,10 @@ function App() {
         } catch (apiError) {
           console.error('API Error:', apiError);
           // Используем тестовые данные при ошибке API
-          // Используем текущий домен или shiba-cars-phuket.com
+          // Используем текущий домен
           const currentDomain = window.location.hostname === 'localhost'
             ? 'http://localhost:3000'
-            : 'https://shiba-cars-phuket.com';
+            : `${window.location.protocol}//${window.location.host}`;
 
           // При ошибке API данных о регистрации нет
           const testData = {

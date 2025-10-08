@@ -87,8 +87,26 @@ const Partner = sequelize.define('Partner', {
 });
 
 Partner.prototype.getPartnerLink = function() {
-  // Используем отдельный домен для партнерских ссылок если он указан
-  const domain = process.env.LANDING_DOMAIN || process.env.DOMAIN || 'https://localhost:3000';
+  // Приоритеты для домена:
+  // 1. Railway публичный домен (для продакшена)
+  // 2. LANDING_DOMAIN (если домен работает)
+  // 3. DOMAIN (fallback)
+  // 4. localhost для разработки
+
+  let domain;
+
+  if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+    // В продакшене на Railway используем Railway домен
+    domain = `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
+  } else if (process.env.LANDING_DOMAIN && !process.env.LANDING_DOMAIN.includes('shiba-cars-phuket.com')) {
+    // Используем LANDING_DOMAIN если он не shiba-cars-phuket.com (который не работает)
+    domain = process.env.LANDING_DOMAIN;
+  } else if (process.env.DOMAIN) {
+    domain = process.env.DOMAIN;
+  } else {
+    domain = 'https://localhost:3000';
+  }
+
   // Убираем trailing slash если есть
   const cleanDomain = domain.replace(/\/$/, '');
   return `${cleanDomain}/r/${this.uniqueCode}`;
