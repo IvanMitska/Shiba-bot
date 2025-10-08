@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FiCopy, FiCheck, FiUsers, FiActivity, FiTrendingUp, FiDollarSign } from 'react-icons/fi';
+import { FiCopy, FiCheck, FiUsers, FiActivity, FiTrendingUp, FiDollarSign, FiExternalLink } from 'react-icons/fi';
 import { FaWhatsapp, FaTelegram, FaCar, FaChartLine } from 'react-icons/fa';
 
 const Dashboard = ({ data }) => {
@@ -23,6 +23,18 @@ const Dashboard = ({ data }) => {
           buttons: [{ type: 'ok' }]
         });
       }
+    }
+  };
+
+  const openLanding = () => {
+    if (data?.partnerLink) {
+      // Haptic feedback
+      if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+      }
+
+      // Открываем в новом окне
+      window.open(data.partnerLink, '_blank');
     }
   };
 
@@ -87,6 +99,19 @@ const Dashboard = ({ data }) => {
         <button className="button-primary copy-button" onClick={copyLink}>
           {copied ? <FiCheck size={18} /> : <FiCopy size={18} />}
           <span>{copied ? 'СКОПИРОВАНО!' : 'КОПИРОВАТЬ ССЫЛКУ'}</span>
+        </button>
+
+        <button
+          className="button-primary"
+          onClick={openLanding}
+          style={{
+            marginTop: '12px',
+            background: 'linear-gradient(135deg, var(--shiba-orange) 0%, var(--shiba-orange-dark) 100%)',
+            border: '1px solid rgba(255,140,0,0.3)'
+          }}
+        >
+          <FiExternalLink size={18} />
+          <span>ОТКРЫТЬ ЛЕНДИНГ</span>
         </button>
       </div>
 
