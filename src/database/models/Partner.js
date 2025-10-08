@@ -88,19 +88,19 @@ const Partner = sequelize.define('Partner', {
 
 Partner.prototype.getPartnerLink = function() {
   // Приоритеты для домена:
-  // 1. Railway публичный домен (для продакшена)
-  // 2. LANDING_DOMAIN (если домен работает)
+  // 1. LANDING_DOMAIN (для Netlify лендинга)
+  // 2. Railway публичный домен (если нет лендинга)
   // 3. DOMAIN (fallback)
   // 4. localhost для разработки
 
   let domain;
 
-  if (process.env.RAILWAY_PUBLIC_DOMAIN) {
-    // В продакшене на Railway используем Railway домен
-    domain = `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
-  } else if (process.env.LANDING_DOMAIN && !process.env.LANDING_DOMAIN.includes('shiba-cars-phuket.com')) {
-    // Используем LANDING_DOMAIN если он не shiba-cars-phuket.com (который не работает)
+  if (process.env.LANDING_DOMAIN) {
+    // Используем LANDING_DOMAIN для партнерских ссылок (Netlify)
     domain = process.env.LANDING_DOMAIN;
+  } else if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+    // Fallback на Railway домен если нет LANDING_DOMAIN
+    domain = `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
   } else if (process.env.DOMAIN) {
     domain = process.env.DOMAIN;
   } else {
