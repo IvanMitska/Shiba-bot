@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
-import { FiCopy, FiRefreshCw, FiTrendingUp, FiUsers, FiMousePointer, FiEye, FiShare2 } from 'react-icons/fi';
+import { FiCopy, FiRefreshCw, FiTrendingUp, FiUsers, FiMousePointer, FiEye, FiShare2, FiExternalLink } from 'react-icons/fi';
 import { FaWhatsapp, FaTelegram } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { partnerAPI } from '../services/api';
@@ -47,6 +47,13 @@ const Dashboard = () => {
         text: 'Переходите по ссылке для аренды транспорта',
         url: partnerInfo.data.partnerLink,
       }).catch(() => {});
+      hapticFeedback('medium');
+    }
+  };
+
+  const handleOpenLanding = () => {
+    if (partnerInfo?.data?.partnerLink) {
+      window.open(partnerInfo.data.partnerLink, '_blank');
       hapticFeedback('medium');
     }
   };
@@ -217,7 +224,15 @@ const Dashboard = () => {
               <FiShare2 className="w-5 h-5" />
               <span>Поделиться ссылкой</span>
             </button>
-            
+
+            <button
+              onClick={handleOpenLanding}
+              className="w-full bg-gradient-to-r from-primary-orange to-primary-orange-dark hover:from-primary-orange-dark hover:to-primary-orange text-white font-medium py-3 px-4 rounded-xl transition-all flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"
+            >
+              <FiExternalLink className="w-5 h-5" />
+              <span>Открыть лендинг</span>
+            </button>
+
             <button
               onClick={() => window.location.href = '/analytics'}
               className="w-full bg-dark-bg hover:bg-dark-card-hover text-white font-medium py-3 px-4 rounded-xl transition-colors flex items-center justify-center space-x-2 border border-dark-border"
@@ -225,7 +240,7 @@ const Dashboard = () => {
               <FiTrendingUp className="w-5 h-5" />
               <span>Посмотреть аналитику</span>
             </button>
-            
+
             <button
               onClick={() => window.location.href = '/history'}
               className="w-full bg-dark-bg hover:bg-dark-card-hover text-white font-medium py-3 px-4 rounded-xl transition-colors flex items-center justify-center space-x-2 border border-dark-border"
