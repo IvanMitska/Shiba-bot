@@ -18,7 +18,7 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #1a1a1a;
             color: #ffffff;
-            min-height: 100vh;ц
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -212,6 +212,18 @@
             box-shadow: 0 10px 30px rgba(42, 171, 238, 0.4);
             background: linear-gradient(135deg, #229ED9 0%, #2AABEE 100%);
         }
+
+        .btn-website {
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+            color: white;
+            border: 2px solid transparent;
+        }
+
+        .btn-website:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.4);
+            background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%);
+        }
         
         .btn-icon {
             display: inline-flex;
@@ -336,30 +348,136 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        @media (max-width: 480px) {
+        /* Tablet styles */
+        @media (max-width: 768px) {
             .container {
-                padding: 32px 24px;
+                padding: 40px 30px;
+                max-width: 90%;
             }
-            
+
             h1 {
-                font-size: 28px;
+                font-size: 32px;
             }
-            
+
+            .subtitle {
+                font-size: 16px;
+                margin-bottom: 36px;
+            }
+
+            .lang-switcher {
+                top: 10px;
+                left: 10px;
+            }
+
+            .partner-badge {
+                top: 10px;
+                right: 10px;
+                font-size: 11px;
+                padding: 8px 14px;
+            }
+        }
+
+        /* Mobile styles */
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                padding: 28px 20px;
+                max-width: 100%;
+                border-radius: 20px;
+            }
+
+            .logo-placeholder {
+                font-size: 26px;
+            }
+
+            .badge {
+                font-size: 11px;
+                padding: 6px 16px;
+                margin-bottom: 20px;
+            }
+
+            h1 {
+                font-size: 26px;
+                margin-bottom: 16px;
+            }
+
             .subtitle {
                 font-size: 14px;
+                margin-bottom: 30px;
+                line-height: 1.5;
             }
-            
+
+            .buttons {
+                gap: 12px;
+                margin-bottom: 30px;
+            }
+
             .btn {
-                padding: 14px 24px;
-                font-size: 15px;
+                padding: 14px 20px;
+                font-size: 14px;
+                border-radius: 12px;
             }
-            
+
+            .btn-icon {
+                width: 20px;
+                height: 20px;
+            }
+
             .stats {
-                gap: 16px;
+                gap: 12px;
+                padding-top: 24px;
             }
-            
+
             .stat-number {
-                font-size: 20px;
+                font-size: 18px;
+            }
+
+            .stat-label {
+                font-size: 11px;
+            }
+
+            .lang-switcher {
+                flex-direction: column;
+                gap: 6px;
+                top: 8px;
+                left: 8px;
+            }
+
+            .lang-btn {
+                padding: 8px 14px;
+                font-size: 12px;
+                border-radius: 12px;
+            }
+
+            .partner-badge {
+                top: 8px;
+                right: 8px;
+                font-size: 10px;
+                padding: 6px 12px;
+                border-radius: 16px;
+            }
+        }
+
+        /* Very small mobile screens */
+        @media (max-width: 360px) {
+            h1 {
+                font-size: 22px;
+            }
+
+            .subtitle {
+                font-size: 13px;
+            }
+
+            .btn {
+                padding: 12px 16px;
+                font-size: 13px;
+            }
+
+            .stat-number {
+                font-size: 16px;
             }
         }
         
@@ -430,12 +548,19 @@
                 </svg>
                 <span data-lang="whatsapp">Contact on WhatsApp</span>
             </a>
-            
+
             <a href="#" class="btn btn-telegram" onclick="trackAndRedirect('telegram'); return false;">
                 <svg class="btn-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 10px;">
                     <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
                 </svg>
                 <span data-lang="telegram">Contact on Telegram</span>
+            </a>
+
+            <a href="https://shiba-cars.com/" target="_blank" class="btn btn-website">
+                <svg class="btn-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 10px;">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+                <span data-lang="website">Visit our website</span>
             </a>
         </div>
         
@@ -472,6 +597,7 @@
                 'subtitle': 'Exclusive collection of cars for special moments. Contact us in a convenient way!',
                 'whatsapp': 'Contact on WhatsApp',
                 'telegram': 'Contact on Telegram',
+                'website': 'Visit our website',
                 'models': 'Models',
                 'years': 'Years on market',
                 'satisfied': 'Satisfied clients',
@@ -485,6 +611,7 @@
                 'subtitle': 'Эксклюзивная коллекция автомобилей для особых моментов. Свяжитесь с нами удобным способом!',
                 'whatsapp': 'Написать в WhatsApp',
                 'telegram': 'Написать в Telegram',
+                'website': 'Посетить наш сайт',
                 'models': 'Моделей',
                 'years': 'Года на рынке',
                 'satisfied': 'Довольных клиентов',
