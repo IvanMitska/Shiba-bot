@@ -281,53 +281,45 @@
         
         .lang-switcher {
             position: absolute;
-            top: 15px;
-            right: 15px;
+            top: 20px;
+            left: 20px;
             display: flex;
-            gap: 0;
+            gap: 8px;
             z-index: 100;
-            background: rgba(30, 30, 30, 0.9);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 107, 53, 0.2);
-            border-radius: 12px;
-            padding: 3px;
         }
 
         .lang-btn {
-            background: transparent;
-            border: none;
+            background: rgba(30, 30, 30, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: rgba(255, 255, 255, 0.7);
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 12px;
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            text-decoration: none;
-            position: relative;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
 
         .lang-btn:hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(40, 40, 40, 0.9);
+            border-color: rgba(255, 107, 53, 0.3);
             color: rgba(255, 255, 255, 0.9);
+            transform: translateY(-1px);
         }
 
         .lang-btn.active {
-            background: rgba(255, 107, 53, 0.2);
+            background: rgba(255, 107, 53, 0.15);
+            border-color: rgba(255, 107, 53, 0.4);
             color: #ff6b35;
         }
 
         .lang-btn.active:hover {
-            background: rgba(255, 107, 53, 0.3);
-            color: #ff8c42;
-        }
-
-        .lang-flag {
-            font-size: 16px;
-            line-height: 1;
+            background: rgba(255, 107, 53, 0.2);
         }
         
         @keyframes fadeIn {
@@ -353,7 +345,7 @@
 
             .lang-switcher {
                 top: 10px;
-                right: 10px;
+                left: 10px;
             }
 
             .partner-badge {
@@ -428,22 +420,18 @@
 
             .lang-switcher {
                 top: 8px;
-                right: 8px;
-                padding: 2px;
+                left: 8px;
+                gap: 6px;
             }
 
             .lang-btn {
-                padding: 6px 8px;
+                padding: 8px 12px;
                 font-size: 11px;
-                border-radius: 6px;
-            }
-
-            .lang-flag {
-                font-size: 14px;
+                border-radius: 10px;
             }
 
             .partner-badge {
-                top: 50px;
+                top: 8px;
                 right: 8px;
                 font-size: 10px;
                 padding: 6px 12px;
@@ -510,10 +498,10 @@
     
     <div class="lang-switcher">
         <button class="lang-btn active" id="langEN" onclick="setLanguage('en')">
-            <span class="lang-flag">🇬🇧</span> EN
+            🇬🇧 EN
         </button>
         <button class="lang-btn" id="langRU" onclick="setLanguage('ru')">
-            <span class="lang-flag">🇷🇺</span> RU
+            🇷🇺 RU
         </button>
     </div>
     
