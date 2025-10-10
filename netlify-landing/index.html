@@ -642,7 +642,7 @@
             document.getElementById('partnerBadge').classList.add('visible');
 
             // Отправляем трекинг просмотра на backend
-            const API_URL = 'https://shibo-tg.up.railway.app';
+            const API_URL = 'https://shibo-tg-backend-production.up.railway.app';
             fetch(`${API_URL}/api/track-view`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -663,7 +663,7 @@
 
             // Если есть партнерский код, отправляем трекинг на backend
             if (partnerCode) {
-                const API_URL = 'https://shibo-tg.up.railway.app';
+                const API_URL = 'https://shibo-tg-backend-production.up.railway.app';
                 fetch(`${API_URL}/api/redirect`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
