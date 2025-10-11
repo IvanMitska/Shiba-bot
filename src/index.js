@@ -200,62 +200,36 @@ async function startApplication() {
       res.sendFile(path.join(__dirname, '../telegram-webapp/build/index.html'));
     });
 
-    // 404 handler
-    app.use((req, res, next) => {
-      console.log('404 Not found:', req.method, req.url);
-      res.status(404).json({ error: 'Not found' });
-    });
-
-    // Error handler
-    app.use((err, req, res, next) => {
-      logger.error('Unhandled error:', err);
-
-      const status = err.status || 500;
-      const message = err.message || 'Internal server error';
-
-      res.status(status).json({
-        error: message,
-        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-      });
-    });
-
-    // Start server BEFORE bot initialization
-    const server = app.listen(port, () => {
-      console.log(`✅ Server running on port ${port}`);
-      console.log(`🌐 Check health: http://localhost:${port}/health`);
-      console.log(`🤖 Check bot: http://localhost:${port}/test-bot`);
-      logger.info(`Web server started on port ${port}`);
-    });
-
+    // Initialize bot BEFORE starting server so webhook route is registered
     let bot = null;
     let webhookUrl = null;
 
-    // Initialize Telegram bot with Web App support AFTER server is running
+    // Initialize Telegram bot with Web App support BEFORE 404 handler
     if (process.env.BOT_TOKEN) {
       console.log('Initializing Telegram bot with Web App support...');
-      
+
       try {
         // Use the new PartnerBot class with Web App button
         const PartnerBot = require('./bot/bot');
         const botInstance = new PartnerBot(process.env.BOT_TOKEN);
         bot = botInstance.bot;
-        
+
         // Setup webhook or polling
         if (process.env.NODE_ENV === 'production') {
           // Production mode - use webhook
-          const domain = process.env.RAILWAY_PUBLIC_DOMAIN || 
-                        process.env.APP_URL || 
+          const domain = process.env.RAILWAY_PUBLIC_DOMAIN ||
+                        process.env.APP_URL ||
                         'shibo-tg-backend-production.up.railway.app';
-          
+
           webhookUrl = `https://${domain.replace('https://', '').replace('http://', '')}/webhook`;
-          
+
           console.log('Setting up webhook:', webhookUrl);
-          
-          // Register webhook endpoint
+
+          // Register webhook endpoint BEFORE 404 handler!
           app.post('/webhook', async (req, res) => {
             console.log('Webhook received from IP:', req.ip);
             console.log('Webhook body:', JSON.stringify(req.body).substring(0, 200));
-            
+
             try {
               await bot.handleUpdate(req.body);
               res.sendStatus(200);
@@ -264,13 +238,13 @@ async function startApplication() {
               res.sendStatus(500);
             }
           });
-          
+
           console.log('✅ Webhook endpoint registered at /webhook');
-          
+
           // Delete old webhook and set new one
           await bot.telegram.deleteWebhook();
           await bot.telegram.setWebhook(webhookUrl);
-          
+
           const webhookInfo = await bot.telegram.getWebhookInfo();
           console.log('Webhook info:', webhookInfo);
           console.log('✅ Bot webhook configured');
