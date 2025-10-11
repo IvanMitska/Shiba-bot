@@ -265,12 +265,39 @@ async function startApplication() {
     } else {
       console.log('⚠️ BOT_TOKEN not provided, running without bot');
     }
-    
+
+    // 404 handler
+    app.use((req, res, next) => {
+      console.log('404 Not found:', req.method, req.url);
+      res.status(404).json({ error: 'Not found' });
+    });
+
+    // Error handler
+    app.use((err, req, res, next) => {
+      logger.error('Unhandled error:', err);
+
+      const status = err.status || 500;
+      const message = err.message || 'Internal server error';
+
+      res.status(status).json({
+        error: message,
+        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+      });
+    });
+
+    // Start server AFTER bot initialization and route setup
+    const server = app.listen(port, () => {
+      console.log(`✅ Server running on port ${port}`);
+      console.log(`🌐 Check health: http://localhost:${port}/health`);
+      console.log(`🤖 Check bot: http://localhost:${port}/test-bot`);
+      logger.info(`Web server started on port ${port}`);
+    });
+
     // Heartbeat logging
     setInterval(() => {
       logger.info('Application heartbeat');
     }, 30000);
-    
+
     // Graceful shutdown
     process.on('SIGINT', async () => {
       console.log('\n🛑 Shutting down gracefully...');
