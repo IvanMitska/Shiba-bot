@@ -84,7 +84,8 @@
         
         .logo {
             width: 200px;
-            height: auto;
+            height: 200px;
+            object-fit: contain;
             filter: brightness(0.9) contrast(1.1) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
             background: transparent;
         }
@@ -258,7 +259,7 @@
         }
         
         .partner-badge {
-            position: absolute;
+            position: fixed;
             top: 20px;
             right: 20px;
             background: linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(255, 140, 66, 0.12) 100%);
@@ -273,6 +274,7 @@
             box-shadow: 0 4px 15px rgba(255, 107, 53, 0.2);
             backdrop-filter: blur(10px);
             letter-spacing: 0.3px;
+            z-index: 1000;
         }
         
         .partner-badge.visible {
@@ -280,12 +282,12 @@
         }
         
         .lang-switcher {
-            position: absolute;
+            position: fixed;
             top: 20px;
             left: 20px;
             display: flex;
             gap: 8px;
-            z-index: 100;
+            z-index: 1000;
         }
 
         .lang-btn {
@@ -359,13 +361,18 @@
         /* Mobile styles */
         @media (max-width: 480px) {
             body {
-                padding: 15px;
+                padding: 10px;
             }
 
             .container {
-                padding: 28px 20px;
+                padding: 36px 24px;
                 max-width: 100%;
                 border-radius: 20px;
+            }
+
+            .logo {
+                width: 160px;
+                height: 160px;
             }
 
             .logo-placeholder {
@@ -379,14 +386,14 @@
             }
 
             h1 {
-                font-size: 26px;
+                font-size: 28px;
                 margin-bottom: 16px;
             }
 
             .subtitle {
-                font-size: 14px;
-                margin-bottom: 30px;
-                line-height: 1.5;
+                font-size: 15px;
+                margin-bottom: 32px;
+                line-height: 1.6;
             }
 
             .buttons {
@@ -395,9 +402,10 @@
             }
 
             .btn {
-                padding: 14px 20px;
-                font-size: 14px;
-                border-radius: 12px;
+                padding: 16px 24px;
+                font-size: 15px;
+                border-radius: 14px;
+                font-weight: 600;
             }
 
             .btn-icon {
@@ -441,17 +449,30 @@
 
         /* Very small mobile screens */
         @media (max-width: 360px) {
+            body {
+                padding: 8px;
+            }
+
+            .container {
+                padding: 28px 18px;
+            }
+
+            .logo {
+                width: 140px;
+                height: 140px;
+            }
+
             h1 {
-                font-size: 22px;
+                font-size: 24px;
             }
 
             .subtitle {
-                font-size: 13px;
+                font-size: 14px;
             }
 
             .btn {
-                padding: 12px 16px;
-                font-size: 13px;
+                padding: 14px 20px;
+                font-size: 14px;
             }
 
             .stat-number {
