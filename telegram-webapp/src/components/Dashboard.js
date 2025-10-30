@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { FiCopy, FiCheck, FiUsers, FiActivity, FiTrendingUp, FiDollarSign, FiExternalLink } from 'react-icons/fi';
-import { FaWhatsapp, FaTelegram, FaCar, FaChartLine } from 'react-icons/fa';
+import { FaWhatsapp, FaTelegram, FaChartLine } from 'react-icons/fa';
+import shibaLogo from '../assets/logo.png';
 
 const Dashboard = ({ data }) => {
   const [copied, setCopied] = useState(false);
+  const [copiedBot, setCopiedBot] = useState(false);
 
   const copyLink = () => {
     if (data?.partnerLink) {
@@ -20,6 +22,27 @@ const Dashboard = ({ data }) => {
       if (window.Telegram?.WebApp?.showPopup) {
         window.Telegram.WebApp.showPopup({
           message: 'Ссылка скопирована!',
+          buttons: [{ type: 'ok' }]
+        });
+      }
+    }
+  };
+
+  const copyBotLink = () => {
+    if (data?.telegramBotLink) {
+      navigator.clipboard.writeText(data.telegramBotLink);
+      setCopiedBot(true);
+      setTimeout(() => setCopiedBot(false), 2000);
+
+      // Haptic feedback
+      if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+      }
+
+      // Уведомление для пользователя
+      if (window.Telegram?.WebApp?.showPopup) {
+        window.Telegram.WebApp.showPopup({
+          message: 'Telegram ссылка скопирована!',
           buttons: [{ type: 'ok' }]
         });
       }
@@ -54,98 +77,320 @@ const Dashboard = ({ data }) => {
   return (
     <div className="dashboard">
       {/* Welcome Section */}
-      <div className="card" style={{
-        background: 'linear-gradient(135deg, rgba(255,140,0,0.05) 0%, rgba(255,140,0,0.1) 100%)',
-        borderColor: 'rgba(255,140,0,0.3)'
+      <div className="card welcome-card" style={{
+        background: 'rgba(26, 26, 26, 0.95)',
+        borderColor: 'rgba(255, 255, 255, 0.08)',
+        position: 'relative'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
           <div style={{
-            width: '50px',
-            height: '50px',
-            background: 'linear-gradient(135deg, var(--shiba-orange) 0%, var(--shiba-orange-dark) 100%)',
-            borderRadius: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
+            width: '72px',
+            height: '72px',
+            borderRadius: '50%',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+            flexShrink: 0,
+            overflow: 'hidden'
           }}>
-            <FaCar size={24} color="#000" />
+            <img
+              src={shibaLogo}
+              alt="Shiba Logo"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block'
+              }}
+            />
           </div>
-          <div>
-            <h2 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '4px' }}>
-              Добро пожаловать!
+          <div style={{ flex: 1 }}>
+            <h2 style={{
+              fontSize: '20px',
+              fontWeight: '700',
+              marginBottom: '6px',
+              color: '#ffffff'
+            }}>
+              Добро пожаловать
             </h2>
-            <p style={{ fontSize: '13px', color: 'var(--shiba-text-secondary)' }}>
+            <p style={{
+              fontSize: '13px',
+              color: 'var(--shiba-text-secondary)',
+              fontWeight: '500'
+            }}>
               Партнёр #{String(data?.partnerId || '0000').slice(-4)}
             </p>
           </div>
         </div>
 
         <div style={{
-          padding: '16px',
+          padding: '14px',
           background: 'rgba(0,0,0,0.3)',
           borderRadius: '12px',
-          marginBottom: '16px'
+          marginBottom: '16px',
+          border: '1px solid rgba(255,255,255,0.06)'
         }}>
-          <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            Ваша партнёрская ссылка
+          <h3 style={{
+            fontSize: '11px',
+            fontWeight: '600',
+            marginBottom: '10px',
+            textTransform: 'uppercase',
+            letterSpacing: '1px',
+            color: 'var(--shiba-text-secondary)'
+          }}>
+            Партнёрская ссылка
           </h3>
-          <div className="link-container" style={{
-            fontSize: '12px',
+          <div style={{
+            fontSize: '13px',
             wordBreak: 'break-all',
             padding: '12px',
-            background: 'rgba(0,0,0,0.5)',
+            background: 'rgba(255,255,255,0.03)',
             borderRadius: '8px',
-            border: '1px solid rgba(255,140,0,0.2)'
+            border: '1px solid rgba(255,255,255,0.08)',
+            color: '#ffffff',
+            fontWeight: '500',
+            fontFamily: 'monospace'
           }}>
             {data?.partnerLink || 'Загрузка...'}
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <button className="button-primary copy-button" onClick={copyLink}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <button className="button-primary" onClick={copyLink} style={{
+            background: copied ? '#22c55e' : 'var(--shiba-orange)',
+            padding: '14px',
+            borderRadius: '10px',
+            fontSize: '14px',
+            fontWeight: '600',
+            letterSpacing: '0.3px',
+            border: 'none',
+            color: '#000000',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            transition: 'all 0.2s ease',
+            cursor: 'pointer',
+            boxShadow: 'none'
+          }}>
             {copied ? <FiCheck size={18} /> : <FiCopy size={18} />}
-            <span>{copied ? 'СКОПИРОВАНО!' : 'КОПИРОВАТЬ ССЫЛКУ'}</span>
+            <span>{copied ? 'Скопировано' : 'Копировать ссылку'}</span>
           </button>
 
-          <button className="button-primary copy-button" onClick={openLanding}>
+          <button className="button-secondary" onClick={openLanding} style={{
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            color: '#ffffff',
+            padding: '14px',
+            borderRadius: '10px',
+            fontSize: '14px',
+            fontWeight: '600',
+            letterSpacing: '0.3px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            transition: 'all 0.2s ease',
+            cursor: 'pointer',
+            boxShadow: 'none'
+          }}>
             <FiExternalLink size={18} />
-            <span>ОТКРЫТЬ ЛЕНДИНГ</span>
+            <span>Открыть лендинг</span>
           </button>
         </div>
+
+        {/* Telegram Bot Link Info */}
+        {data?.telegramBotLink && (
+          <div style={{
+            marginTop: '20px',
+            padding: '16px',
+            background: 'rgba(34, 158, 217, 0.1)',
+            border: '1px solid rgba(34, 158, 217, 0.2)',
+            borderRadius: '12px'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginBottom: '10px'
+            }}>
+              <FaTelegram size={18} color="#229ED9" />
+              <h3 style={{
+                fontSize: '12px',
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                color: '#229ED9'
+              }}>
+                Ссылка для Telegram (рекомендуется)
+              </h3>
+            </div>
+            <p style={{
+              fontSize: '12px',
+              color: 'var(--shiba-text-secondary)',
+              marginBottom: '12px',
+              lineHeight: '1.5'
+            }}>
+              Используйте эту ссылку для отслеживания пользователей Telegram. При переходе по ней автоматически сохраняются данные пользователя.
+            </p>
+            <div style={{
+              fontSize: '13px',
+              wordBreak: 'break-all',
+              padding: '12px',
+              background: 'rgba(34, 158, 217, 0.05)',
+              borderRadius: '8px',
+              border: '1px solid rgba(34, 158, 217, 0.15)',
+              color: '#ffffff',
+              fontWeight: '500',
+              fontFamily: 'monospace',
+              marginBottom: '10px'
+            }}>
+              {data.telegramBotLink}
+            </div>
+            <button className="button-primary" onClick={copyBotLink} style={{
+              background: copiedBot ? '#22c55e' : '#229ED9',
+              padding: '12px',
+              borderRadius: '10px',
+              fontSize: '13px',
+              fontWeight: '600',
+              letterSpacing: '0.3px',
+              border: 'none',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'all 0.2s ease',
+              cursor: 'pointer',
+              boxShadow: 'none',
+              width: '100%'
+            }}>
+              {copiedBot ? <FiCheck size={16} /> : <FiCopy size={16} />}
+              <span>{copiedBot ? 'Скопировано' : 'Копировать Telegram ссылку'}</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Stats Grid */}
       <div className="stats-grid">
-        <div className="stat-card">
-          <div className="icon">
-            <FiTrendingUp />
+        <div className="stat-card" style={{
+          background: 'rgba(26, 26, 26, 0.95)',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
+          padding: '20px 16px',
+          borderRadius: '16px'
+        }}>
+          <div className="icon" style={{
+            background: 'var(--shiba-orange)',
+            boxShadow: '0 4px 12px rgba(255, 140, 0, 0.25)',
+            width: '44px',
+            height: '44px',
+            borderRadius: '12px',
+            marginBottom: '12px'
+          }}>
+            <FiTrendingUp size={22} />
           </div>
-          <div className="stat-value">{stats.todayClicks}</div>
-          <div className="stat-label">Сегодня</div>
+          <div className="stat-value" style={{
+            fontSize: '32px',
+            fontWeight: '700',
+            color: '#ffffff',
+            marginBottom: '4px'
+          }}>{stats.todayClicks}</div>
+          <div className="stat-label" style={{
+            fontSize: '12px',
+            color: 'var(--shiba-text-secondary)',
+            fontWeight: '500',
+            letterSpacing: '0.3px'
+          }}>Сегодня</div>
         </div>
 
-        <div className="stat-card">
-          <div className="icon">
-            <FaChartLine />
+        <div className="stat-card" style={{
+          background: 'rgba(26, 26, 26, 0.95)',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
+          padding: '20px 16px',
+          borderRadius: '16px'
+        }}>
+          <div className="icon" style={{
+            background: 'var(--shiba-orange)',
+            boxShadow: '0 4px 12px rgba(255, 140, 0, 0.25)',
+            width: '44px',
+            height: '44px',
+            borderRadius: '12px',
+            marginBottom: '12px'
+          }}>
+            <FaChartLine size={22} />
           </div>
-          <div className="stat-value">{stats.totalClicks}</div>
-          <div className="stat-label">Всего</div>
+          <div className="stat-value" style={{
+            fontSize: '32px',
+            fontWeight: '700',
+            color: '#ffffff',
+            marginBottom: '4px'
+          }}>{stats.totalClicks}</div>
+          <div className="stat-label" style={{
+            fontSize: '12px',
+            color: 'var(--shiba-text-secondary)',
+            fontWeight: '500',
+            letterSpacing: '0.3px'
+          }}>Всего</div>
         </div>
 
-        <div className="stat-card">
-          <div className="icon" style={{ background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)' }}>
-            <FaWhatsapp color="white" size={24} />
+        <div className="stat-card" style={{
+          background: 'rgba(26, 26, 26, 0.95)',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
+          padding: '20px 16px',
+          borderRadius: '16px'
+        }}>
+          <div className="icon" style={{
+            background: '#25D366',
+            boxShadow: '0 4px 12px rgba(37, 211, 102, 0.25)',
+            width: '44px',
+            height: '44px',
+            borderRadius: '12px',
+            marginBottom: '12px'
+          }}>
+            <FaWhatsapp color="white" size={22} />
           </div>
-          <div className="stat-value">{stats.whatsappClicks}</div>
-          <div className="stat-label">WhatsApp</div>
+          <div className="stat-value" style={{
+            fontSize: '32px',
+            fontWeight: '700',
+            color: '#ffffff',
+            marginBottom: '4px'
+          }}>{stats.whatsappClicks}</div>
+          <div className="stat-label" style={{
+            fontSize: '12px',
+            color: 'var(--shiba-text-secondary)',
+            fontWeight: '500',
+            letterSpacing: '0.3px'
+          }}>WhatsApp</div>
         </div>
 
-        <div className="stat-card">
-          <div className="icon" style={{ background: 'linear-gradient(135deg, #229ED9 0%, #0088CC 100%)' }}>
-            <FaTelegram color="white" size={24} />
+        <div className="stat-card" style={{
+          background: 'rgba(26, 26, 26, 0.95)',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
+          padding: '20px 16px',
+          borderRadius: '16px'
+        }}>
+          <div className="icon" style={{
+            background: '#229ED9',
+            boxShadow: '0 4px 12px rgba(34, 158, 217, 0.25)',
+            width: '44px',
+            height: '44px',
+            borderRadius: '12px',
+            marginBottom: '12px'
+          }}>
+            <FaTelegram color="white" size={22} />
           </div>
-          <div className="stat-value">{stats.telegramClicks}</div>
-          <div className="stat-label">Telegram</div>
+          <div className="stat-value" style={{
+            fontSize: '32px',
+            fontWeight: '700',
+            color: '#ffffff',
+            marginBottom: '4px'
+          }}>{stats.telegramClicks}</div>
+          <div className="stat-label" style={{
+            fontSize: '12px',
+            color: 'var(--shiba-text-secondary)',
+            fontWeight: '500',
+            letterSpacing: '0.3px'
+          }}>Telegram</div>
         </div>
       </div>
     </div>

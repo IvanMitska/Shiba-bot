@@ -112,6 +112,37 @@ const Click = sequelize.define('Click', {
   metadata: {
     type: DataTypes.JSONB,
     defaultValue: {}
+  },
+  // Telegram user information
+  telegramUserId: {
+    type: DataTypes.BIGINT,
+    allowNull: true,
+    field: 'telegram_user_id'
+  },
+  telegramUsername: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'telegram_username'
+  },
+  telegramFirstName: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'telegram_first_name'
+  },
+  telegramLastName: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'telegram_last_name'
+  },
+  telegramPhotoUrl: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'telegram_photo_url'
+  },
+  telegramLanguageCode: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'telegram_language_code'
   }
 }, {
   tableName: 'clicks',

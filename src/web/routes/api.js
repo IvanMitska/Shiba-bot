@@ -148,6 +148,7 @@ router.post('/partner/register', async (req, res) => {
     }
 
     const partnerLink = partner.getPartnerLink();
+    const telegramBotLink = partner.getTelegramBotLink();
 
     logger.info(`Partner ${created ? 'registered' : 'logged in'}: ${telegramId} (@${username})`);
 
@@ -160,6 +161,7 @@ router.post('/partner/register', async (req, res) => {
         firstName: partner.firstName,
         lastName: partner.lastName,
         partnerLink,
+        telegramBotLink,
         totalClicks: partner.totalClicks,
         uniqueVisitors: partner.uniqueVisitors,
         whatsappClicks: partner.whatsappClicks,
@@ -181,10 +183,11 @@ router.get('/partner/info', async (req, res) => {
     if (req.userType !== 'partner') {
       return res.status(403).json({ error: 'Access denied' });
     }
-    
+
     const partner = req.partner;
     const partnerLink = partner.getPartnerLink();
-    
+    const telegramBotLink = partner.getTelegramBotLink();
+
     res.json({
       id: partner.id,
       uniqueCode: partner.uniqueCode,
@@ -192,6 +195,7 @@ router.get('/partner/info', async (req, res) => {
       firstName: partner.firstName,
       lastName: partner.lastName,
       partnerLink,
+      telegramBotLink, // Add Telegram Bot Link for better tracking
       totalClicks: partner.totalClicks,
       uniqueVisitors: partner.uniqueVisitors,
       whatsappClicks: partner.whatsappClicks,
@@ -426,6 +430,28 @@ router.get('/partner/analytics', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error getting analytics:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.get('/partner/referrals', async (req, res) => {
+  try {
+    if (req.userType !== 'partner') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const { limit = 50, offset = 0, period = 'all' } = req.query;
+    const partnerId = req.partner.id;
+
+    const result = await trackingService.getPartnerReferrals(partnerId, {
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      period
+    });
+
+    res.json(result);
+  } catch (error) {
+    logger.error('Error getting partner referrals:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });

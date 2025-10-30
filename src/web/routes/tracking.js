@@ -13,21 +13,32 @@ router.get('/r/:code', async (req, res) => {
     const ip = getClientIP(req);
     const userAgent = req.headers['user-agent'] || '';
     const referer = req.headers['referer'] || '';
-    
+
+    // Extract Telegram user data from query params if available
+    const telegramUser = req.query.tgUserId ? {
+      id: req.query.tgUserId,
+      username: req.query.tgUsername,
+      first_name: req.query.tgFirstName,
+      last_name: req.query.tgLastName,
+      photo_url: req.query.tgPhotoUrl,
+      language_code: req.query.tgLangCode
+    } : null;
+
     const trackingData = {
       ip,
       userAgent,
       referer,
       query: req.query,
-      sessionId: null // We don't use sessions anymore
+      sessionId: null, // We don't use sessions anymore
+      telegramUser
     };
-    
+
     const result = await trackingService.trackClick(code, trackingData);
-    
+
     if (!result) {
       return res.status(404).send('Ссылка не найдена');
     }
-    
+
     const { partner, click } = result;
 
     // Read the HTML file
@@ -161,23 +172,24 @@ router.post('/api/redirect', async (req, res) => {
 
 router.post('/api/track-view', async (req, res) => {
   try {
-    const { partnerCode, clickId } = req.body;
-    
+    const { partnerCode, clickId, telegramUser } = req.body;
+
     if (partnerCode) {
       const ip = getClientIP(req);
       const userAgent = req.headers['user-agent'] || '';
       const referer = req.headers['referer'] || '';
-      
+
       const trackingData = {
         ip,
         userAgent,
         referer,
         query: req.query,
-        sessionId: null
+        sessionId: null,
+        telegramUser
       };
-      
+
       const result = await trackingService.trackClick(partnerCode, trackingData);
-      
+
       if (result) {
         logger.info(`Landing page viewed for partner: ${partnerCode}, click: ${result.click.id}`);
         res.json({ success: true, clickId: result.click.id });

@@ -3,10 +3,11 @@ import Dashboard from './components/Dashboard';
 import Statistics from './components/Statistics';
 import History from './components/History';
 import Profile from './components/Profile';
+import PartnerTraffic from './components/PartnerTraffic';
 import { getTelegramWebApp } from './utils/telegram';
-import { fetchPartnerData } from './services/api';
 import axios from 'axios';
 import './styles/index.css';
+import { FiHome, FiBarChart2, FiClock, FiUser, FiUsers } from 'react-icons/fi';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -257,6 +258,8 @@ function App() {
         return <Dashboard data={partnerData} />;
       case 'statistics':
         return <Statistics data={partnerData} />;
+      case 'traffic':
+        return <PartnerTraffic data={partnerData} />;
       case 'history':
         return <History data={partnerData} />;
       case 'profile':
@@ -341,28 +344,45 @@ function App() {
             className={`bottom-tab ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => handleTabChange('dashboard')}
           >
-            <span className="tab-icon">🏠</span>
+            <span className="tab-icon">
+              <FiHome size={20} />
+            </span>
             <span className="tab-label">ГЛАВНАЯ</span>
           </button>
           <button
             className={`bottom-tab ${activeTab === 'statistics' ? 'active' : ''}`}
             onClick={() => handleTabChange('statistics')}
           >
-            <span className="tab-icon">📊</span>
+            <span className="tab-icon">
+              <FiBarChart2 size={20} />
+            </span>
             <span className="tab-label">СТАТИСТИКА</span>
+          </button>
+          <button
+            className={`bottom-tab ${activeTab === 'traffic' ? 'active' : ''}`}
+            onClick={() => handleTabChange('traffic')}
+          >
+            <span className="tab-icon">
+              <FiUsers size={20} />
+            </span>
+            <span className="tab-label">ТРАФИК</span>
           </button>
           <button
             className={`bottom-tab ${activeTab === 'history' ? 'active' : ''}`}
             onClick={() => handleTabChange('history')}
           >
-            <span className="tab-icon">📜</span>
+            <span className="tab-icon">
+              <FiClock size={20} />
+            </span>
             <span className="tab-label">ИСТОРИЯ</span>
           </button>
           <button
             className={`bottom-tab ${activeTab === 'profile' ? 'active' : ''}`}
             onClick={() => handleTabChange('profile')}
           >
-            <span className="tab-icon">👤</span>
+            <span className="tab-icon">
+              <FiUser size={20} />
+            </span>
             <span className="tab-label">ПРОФИЛЬ</span>
           </button>
         </div>

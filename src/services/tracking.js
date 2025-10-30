@@ -44,12 +44,12 @@ class TrackingService {
         return null;
       }
       
-      const { ip, userAgent, referer, query } = requestData;
+      const { ip, userAgent, referer, query, telegramUser } = requestData;
       const geo = geoip.lookup(ip) || {};
       const uaData = parseUserAgent(userAgent);
       const utmParams = extractUTMParams(query);
       const ipHash = getUniqueVisitorHash(ip, userAgent);
-      
+
       const existingClick = await Click.findOne({
         where: {
           partnerId: partner.id,
@@ -57,10 +57,10 @@ class TrackingService {
         },
         order: [['clickedAt', 'DESC']]
       });
-      
-      const isUnique = !existingClick || 
+
+      const isUnique = !existingClick ||
         (new Date() - new Date(existingClick.clickedAt)) > 24 * 60 * 60 * 1000;
-      
+
       const clickData = {
         partnerId: partner.id,
         ipAddress: this.anonymizeIP(ip),
@@ -78,6 +78,13 @@ class TrackingService {
         redirectType: 'landing',
         sessionId: requestData.sessionId || null,
         ...utmParams,
+        // Add Telegram user data if available
+        telegramUserId: telegramUser?.id || null,
+        telegramUsername: telegramUser?.username || null,
+        telegramFirstName: telegramUser?.first_name || null,
+        telegramLastName: telegramUser?.last_name || null,
+        telegramPhotoUrl: telegramUser?.photo_url || null,
+        telegramLanguageCode: telegramUser?.language_code || null,
         metadata: {
           browserVersion: uaData.browserVersion,
           osVersion: uaData.osVersion,
@@ -203,6 +210,76 @@ class TrackingService {
     return Object.entries(result)
       .sort((a, b) => b[1] - a[1])
       .map(([key, value]) => ({ [field]: key, count: value }));
+  }
+
+  async getPartnerReferrals(partnerId, options = {}) {
+    try {
+      const { limit = 50, offset = 0, period = 'all' } = options;
+
+      const where = {
+        partnerId,
+        telegramUserId: { [Op.not]: null } // Only clicks with Telegram user data
+      };
+
+      if (period !== 'all') {
+        const now = new Date();
+        let startDate;
+
+        switch (period) {
+          case 'today':
+            startDate = new Date(now.setHours(0, 0, 0, 0));
+            break;
+          case 'week':
+            startDate = new Date(now.setDate(now.getDate() - 7));
+            break;
+          case 'month':
+            startDate = new Date(now.setMonth(now.getMonth() - 1));
+            break;
+          default:
+            startDate = null;
+        }
+
+        if (startDate) {
+          where.clickedAt = { [Op.gte]: startDate };
+        }
+      }
+
+      const clicks = await Click.findAll({
+        where,
+        order: [['clickedAt', 'DESC']],
+        limit,
+        offset
+      });
+
+      const total = await Click.count({ where });
+
+      // Format referrals data
+      const referrals = clicks.map(click => ({
+        id: click.id,
+        userId: click.telegramUserId,
+        username: click.telegramUsername,
+        firstName: click.telegramFirstName,
+        lastName: click.telegramLastName,
+        photoUrl: click.telegramPhotoUrl,
+        languageCode: click.telegramLanguageCode,
+        clickedAt: click.clickedAt,
+        redirectType: click.redirectType,
+        country: click.country,
+        city: click.city,
+        deviceType: click.deviceType,
+        browser: click.browser,
+        os: click.os
+      }));
+
+      return {
+        referrals,
+        total,
+        hasMore: offset + limit < total
+      };
+    } catch (error) {
+      logger.error('Error getting partner referrals:', error);
+      throw error;
+    }
   }
 }
 

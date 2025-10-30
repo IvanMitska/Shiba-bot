@@ -112,6 +112,13 @@ Partner.prototype.getPartnerLink = function() {
   return `${cleanDomain}/r/${this.uniqueCode}`;
 };
 
+// Get Telegram bot deep link for tracking referrals
+Partner.prototype.getTelegramBotLink = function() {
+  const botUsername = process.env.BOT_USERNAME || 'your_bot';
+  // This will open bot with start parameter, allowing us to track user info
+  return `https://t.me/${botUsername}?start=ref_${this.uniqueCode}`;
+};
+
 Partner.prototype.incrementClicks = async function(type = 'total') {
   const updates = {
     totalClicks: this.totalClicks + 1,

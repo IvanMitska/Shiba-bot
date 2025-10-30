@@ -1,8 +1,9 @@
 const { Telegraf, Markup } = require('telegraf');
-const { Partner } = require('../database/models');
+const { Partner, Click } = require('../database/models');
 const { generateWebAppButton } = require('./webApp');
 const { formatPartnerStats } = require('./utils');
 const logger = require('../utils/logger');
+const trackingService = require('../services/tracking');
 
 class PartnerBot {
   constructor(token) {
@@ -23,8 +24,22 @@ class PartnerBot {
   async handleStart(ctx) {
     try {
       const telegramId = ctx.from.id;
-      const { username, first_name, last_name } = ctx.from;
-      
+      const { username, first_name, last_name, language_code } = ctx.from;
+
+      // Extract start parameter (referral code)
+      const startParam = ctx.message?.text?.split(' ')[1];
+      let referralCode = null;
+
+      if (startParam && startParam.startsWith('ref_')) {
+        referralCode = startParam.replace('ref_', '');
+        logger.info(`User ${telegramId} came from referral: ${referralCode}`);
+      }
+
+      // If this is a referral, track it
+      if (referralCode) {
+        await this.trackReferral(referralCode, ctx.from);
+      }
+
       let [partner, created] = await Partner.findOrCreate({
         where: { telegramId },
         defaults: {
@@ -34,11 +49,11 @@ class PartnerBot {
           lastName: last_name
         }
       });
-      
+
       if (!created && !partner.isActive) {
         return ctx.reply('Ваш аккаунт партнера временно заблокирован. Обратитесь к администратору.');
       }
-      
+
       if (!created) {
         // Обновляем только если данные действительно изменились
         const updates = {};
@@ -52,6 +67,33 @@ class PartnerBot {
         }
       }
       
+      // If came from referral, show contact info
+      if (referralCode) {
+        const referralPartner = await Partner.findOne({
+          where: { uniqueCode: referralCode }
+        });
+
+        if (referralPartner) {
+          const whatsappNumber = process.env.WHATSAPP_NUMBER || '66959657805';
+          const telegramChannel = process.env.TELEGRAM_COMPANY_BOT || 'ShibaCars_Phuket';
+
+          const referralMessage = `🎉 Спасибо, что перешли по партнерской ссылке!
+
+🚗 **Shiba Cars Phuket** - премиальная аренда автомобилей
+
+📱 Свяжитесь с нами удобным способом:`;
+
+          await ctx.replyWithMarkdown(referralMessage,
+            Markup.inlineKeyboard([
+              [{ text: '💬 WhatsApp', url: `https://wa.me/${whatsappNumber}` }],
+              [{ text: '✈️ Telegram', url: `https://t.me/${telegramChannel}` }]
+            ])
+          );
+
+          // Continue with regular partner welcome below
+        }
+      }
+
       const welcomeMessage = created
         ? `👋 Добро пожаловать в систему партнеров аренды транспорта!`
         : `👋 С возвращением, ${first_name || 'партнер'}!`;
@@ -152,6 +194,44 @@ ${stats}
     }
   }
   
+  async trackReferral(referralCode, telegramUser) {
+    try {
+      // Find the partner by referral code
+      const partner = await Partner.findOne({
+        where: { uniqueCode: referralCode, isActive: true }
+      });
+
+      if (!partner) {
+        logger.warn(`Invalid referral code: ${referralCode}`);
+        return;
+      }
+
+      // Create tracking data with Telegram user info
+      const trackingData = {
+        ip: '0.0.0.0', // Not available from Telegram bot
+        userAgent: 'Telegram Bot',
+        referer: `telegram://referral/${referralCode}`,
+        query: {},
+        sessionId: null,
+        telegramUser: {
+          id: telegramUser.id,
+          username: telegramUser.username,
+          first_name: telegramUser.first_name,
+          last_name: telegramUser.last_name,
+          language_code: telegramUser.language_code,
+          photo_url: null // Will be fetched if needed
+        }
+      };
+
+      // Track the click
+      await trackingService.trackClick(referralCode, trackingData);
+
+      logger.info(`Tracked referral for partner ${partner.id} from user ${telegramUser.id}`);
+    } catch (error) {
+      logger.error('Error tracking referral:', error);
+    }
+  }
+
   async launch(webhookUrl = null) {
     try {
       if (webhookUrl) {
@@ -162,7 +242,7 @@ ${stats}
         await this.bot.launch();
         logger.info('Bot launched in polling mode');
       }
-      
+
       process.once('SIGINT', () => this.bot.stop('SIGINT'));
       process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
     } catch (error) {
