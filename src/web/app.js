@@ -111,6 +111,18 @@ class WebApp {
         landing_domain: process.env.LANDING_DOMAIN || 'not set'
       };
 
+      // Show database host (without password)
+      if (process.env.DATABASE_URL) {
+        try {
+          const url = new URL(process.env.DATABASE_URL);
+          status.db_host = url.hostname;
+          status.db_port = url.port;
+          status.db_name = url.pathname.substring(1);
+        } catch (e) {
+          status.db_parse_error = e.message;
+        }
+      }
+
       try {
         await sequelize.authenticate();
         status.connection = 'success';
