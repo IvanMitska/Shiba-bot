@@ -60,13 +60,7 @@ router.get('/partner/:telegramId', validateTelegramWebAppData, async (req, res) 
     const { telegramId } = req.params;
     
     const partner = await Partner.findOne({
-      where: { telegramId },
-      include: [{
-        model: Click,
-        as: 'clicks',
-        limit: 10,
-        order: [['createdAt', 'DESC']]
-      }]
+      where: { telegramId }
     });
     
     if (!partner) {
@@ -80,25 +74,25 @@ router.get('/partner/:telegramId', validateTelegramWebAppData, async (req, res) 
     const todayClicks = await Click.count({
       where: {
         partnerId: partner.id,
-        createdAt: { [Op.gte]: today }
+        clickedAt: { [Op.gte]: today }
       }
     });
-    
+
     const totalClicks = await Click.count({
       where: { partnerId: partner.id }
     });
-    
+
     const whatsappClicks = await Click.count({
       where: {
         partnerId: partner.id,
-        source: 'whatsapp'
+        redirectType: 'whatsapp'
       }
     });
-    
+
     const telegramClicks = await Click.count({
       where: {
         partnerId: partner.id,
-        source: 'telegram'
+        redirectType: 'telegram'
       }
     });
     
@@ -116,8 +110,7 @@ router.get('/partner/:telegramId', validateTelegramWebAppData, async (req, res) 
         telegramClicks,
         conversionRate,
         earnings: partner.earnings || 0
-      },
-      clicks: partner.clicks
+      }
     };
     
     res.json(partnerData);
@@ -143,7 +136,7 @@ router.get('/partner/:telegramId/clicks', validateTelegramWebAppData, async (req
     
     const clicks = await Click.findAll({
       where: { partnerId: partner.id },
-      order: [['createdAt', 'DESC']],
+      order: [['clickedAt', 'DESC']],
       limit: parseInt(limit),
       offset: parseInt(offset)
     });
@@ -187,14 +180,14 @@ router.get('/partner/:telegramId/statistics', validateTelegramWebAppData, async 
     const clicks = await Click.findAll({
       where: {
         partnerId: partner.id,
-        createdAt: { [Op.gte]: startDate }
+        clickedAt: { [Op.gte]: startDate }
       },
       attributes: [
-        [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'date'],
+        [Sequelize.fn('DATE', Sequelize.col('clicked_at')), 'date'],
         [Sequelize.fn('COUNT', '*'), 'count'],
-        'source'
+        'redirect_type'
       ],
-      group: ['date', 'source'],
+      group: ['date', 'redirect_type'],
       order: [['date', 'ASC']]
     });
     

@@ -215,7 +215,12 @@ async function startApplication() {
         bot = botInstance.bot;
 
         // Setup webhook or polling
-        if (process.env.NODE_ENV === 'production') {
+        // Use webhook if RAILWAY_PUBLIC_DOMAIN is set OR if NODE_ENV is production
+        const isProduction = process.env.NODE_ENV === 'production' ||
+                            process.env.RAILWAY_PUBLIC_DOMAIN ||
+                            process.env.RAILWAY_ENVIRONMENT;
+
+        if (isProduction) {
           // Production mode - use webhook
           const domain = process.env.RAILWAY_PUBLIC_DOMAIN ||
                         process.env.APP_URL ||
@@ -243,16 +248,42 @@ async function startApplication() {
 
           // Delete old webhook and set new one
           await bot.telegram.deleteWebhook();
+          console.log('Old webhook deleted');
+
           await bot.telegram.setWebhook(webhookUrl);
+          console.log('New webhook set to:', webhookUrl);
 
           const webhookInfo = await bot.telegram.getWebhookInfo();
-          console.log('Webhook info:', webhookInfo);
-          console.log('✅ Bot webhook configured');
+          console.log('Webhook info:', JSON.stringify({
+            url: webhookInfo.url,
+            has_custom_certificate: webhookInfo.has_custom_certificate,
+            pending_update_count: webhookInfo.pending_update_count,
+            last_error_date: webhookInfo.last_error_date,
+            last_error_message: webhookInfo.last_error_message,
+            max_connections: webhookInfo.max_connections
+          }, null, 2));
+
+          if (webhookInfo.url !== webhookUrl) {
+            console.error('⚠️ WARNING: Webhook URL mismatch!');
+            console.error('Expected:', webhookUrl);
+            console.error('Actual:', webhookInfo.url);
+          } else {
+            console.log('✅ Bot webhook configured successfully');
+          }
+
+          if (webhookInfo.last_error_message) {
+            console.error('⚠️ Last webhook error:', webhookInfo.last_error_message);
+            console.error('Error date:', new Date(webhookInfo.last_error_date * 1000));
+          }
         } else {
           // Development mode - use polling
           console.log('Starting bot in polling mode...');
-          await bot.launch();
-          console.log('✅ Bot started in polling mode');
+          // Launch bot without await to prevent blocking server startup
+          bot.launch().then(() => {
+            console.log('✅ Bot started in polling mode');
+          }).catch(error => {
+            console.error('Failed to start bot in polling mode:', error);
+          });
         }
         
         const botInfo = await bot.telegram.getMe();
@@ -297,6 +328,37 @@ async function startApplication() {
     setInterval(() => {
       logger.info('Application heartbeat');
     }, 30000);
+
+    // Webhook health check (every 5 minutes)
+    if (bot && webhookUrl) {
+      setInterval(async () => {
+        try {
+          const webhookInfo = await bot.telegram.getWebhookInfo();
+          if (webhookInfo.url !== webhookUrl) {
+            console.error('⚠️ CRITICAL: Webhook has been reset!');
+            console.error('Expected:', webhookUrl);
+            console.error('Actual:', webhookInfo.url);
+            console.log('Attempting to restore webhook...');
+
+            await bot.telegram.deleteWebhook();
+            await bot.telegram.setWebhook(webhookUrl);
+
+            const newWebhookInfo = await bot.telegram.getWebhookInfo();
+            if (newWebhookInfo.url === webhookUrl) {
+              console.log('✅ Webhook restored successfully');
+            } else {
+              console.error('❌ Failed to restore webhook');
+            }
+          }
+
+          if (webhookInfo.last_error_message) {
+            console.error('⚠️ Webhook error detected:', webhookInfo.last_error_message);
+          }
+        } catch (error) {
+          console.error('Error checking webhook health:', error);
+        }
+      }, 5 * 60 * 1000); // Check every 5 minutes
+    }
 
     // Graceful shutdown
     process.on('SIGINT', async () => {
