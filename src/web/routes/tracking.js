@@ -41,8 +41,31 @@ router.get('/r/:code', async (req, res) => {
 
     const { partner, click } = result;
 
-    // Read the HTML file
+    // Check if we're running on production (Railway)
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.RAILWAY_PUBLIC_DOMAIN;
+
+    if (isProduction) {
+      // On production, redirect to the Netlify-hosted landing with tracking data
+      const landingDomain = process.env.LANDING_DOMAIN || 'https://shiba-cars-phuket.com';
+      const redirectUrl = new URL('/', landingDomain);
+
+      // Add tracking parameters to the URL
+      redirectUrl.searchParams.set('clickId', click.id);
+      redirectUrl.searchParams.set('partnerCode', code);
+
+      // Redirect to the landing page
+      return res.redirect(redirectUrl.toString());
+    }
+
+    // For local development, serve the HTML directly
     const landingPath = path.join(__dirname, '../../../landing-static/index.html');
+
+    // Check if the file exists
+    if (!fs.existsSync(landingPath)) {
+      logger.error(`Landing HTML file not found at: ${landingPath}`);
+      return res.status(500).send('Страница не найдена');
+    }
+
     let html = fs.readFileSync(landingPath, 'utf-8');
 
     // Inject tracking data and configuration
