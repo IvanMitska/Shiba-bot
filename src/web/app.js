@@ -89,8 +89,8 @@ class WebApp {
   setupRoutes() {
     // Health check endpoint - MUST be first for Railway
     this.app.get('/health', (req, res) => {
-      res.json({ 
-        status: 'ok', 
+      res.json({
+        status: 'ok',
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
         service: 'shibo-cars-bot',
@@ -99,7 +99,34 @@ class WebApp {
         domain: process.env.DOMAIN
       });
     });
-    
+
+    // Database diagnostic endpoint
+    this.app.get('/api/db-status', async (req, res) => {
+      const { sequelize } = require('../database/models');
+
+      const status = {
+        database_url_set: !!process.env.DATABASE_URL,
+        node_env: process.env.NODE_ENV,
+        railway_domain: process.env.RAILWAY_PUBLIC_DOMAIN || 'not set',
+        landing_domain: process.env.LANDING_DOMAIN || 'not set'
+      };
+
+      try {
+        await sequelize.authenticate();
+        status.connection = 'success';
+        status.database_type = sequelize.options.dialect;
+
+        const [results] = await sequelize.query('SELECT COUNT(*) as count FROM partners');
+        status.partners_count = results[0].count;
+      } catch (error) {
+        status.connection = 'failed';
+        status.error = error.message;
+        status.error_type = error.name;
+      }
+
+      res.json(status);
+    });
+
     // Root endpoint - проверяем домен
     this.app.get('/', (req, res) => {
       // Если это запрос с домена лендинга, показываем главную страницу
