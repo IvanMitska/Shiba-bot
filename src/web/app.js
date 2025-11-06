@@ -101,7 +101,7 @@ class WebApp {
     });
 
     // Database diagnostic endpoint
-    this.app.get('/api/db-status', async (req, res) => {
+    this.app.get('/db-status', async (req, res) => {
       const { sequelize } = require('../database/models');
 
       const status = {
