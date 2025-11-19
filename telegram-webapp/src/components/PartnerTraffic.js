@@ -199,21 +199,28 @@ const PartnerTraffic = ({ data }) => {
                           {referral.firstName} {referral.lastName}
                         </>
                       ) : (
-                        'Пользователь'
+                        'Анонимный посетитель'
                       )}
                     </div>
                     {referral.username && (
                       <div className="user-username">@{referral.username}</div>
                     )}
+                    {!referral.username && !referral.firstName && (
+                      <div className="user-username" style={{color: '#888'}}>
+                        {referral.deviceType || 'Неизвестное устройство'}
+                      </div>
+                    )}
                   </div>
                 </div>
-                <button
-                  className="chat-btn"
-                  onClick={() => openTelegramChat(referral.username || referral.userId)}
-                  title="Открыть диалог"
-                >
-                  <FiMessageCircle size={20} />
-                </button>
+                {(referral.username || referral.userId) && (
+                  <button
+                    className="chat-btn"
+                    onClick={() => openTelegramChat(referral.username || referral.userId)}
+                    title="Открыть диалог"
+                  >
+                    <FiMessageCircle size={20} />
+                  </button>
+                )}
               </div>
 
               <div className="referral-details">

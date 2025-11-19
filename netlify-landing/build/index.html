@@ -679,29 +679,42 @@
                 : 'Shiba Cars - Премиум автомобили на Пхукете';
         }
         
-        // Получаем партнерский код из URL пути (/r/КОД)
+        // Получаем партнерский код из URL пути (/r/КОД) или query параметров
         const urlPath = window.location.pathname;
         const pathMatch = urlPath.match(/\/r\/([a-zA-Z0-9]+)/);
-        const partnerCode = pathMatch ? pathMatch[1] : null;
+
+        // Также проверяем query параметры (для редиректа с Railway)
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryPartnerCode = urlParams.get('partnerCode');
+        const queryClickId = urlParams.get('clickId');
+
+        // Используем партнерский код из пути или из query параметров
+        const partnerCode = pathMatch ? pathMatch[1] : queryPartnerCode;
 
         // Показываем badge если есть партнерский код
         if (partnerCode) {
             document.getElementById('partnerBadge').classList.add('visible');
 
-            // Отправляем трекинг просмотра на backend
-            const API_URL = 'https://shibo-tg-backend-production.up.railway.app';
-            fetch(`${API_URL}/api/track-view`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ partnerCode })
-            }).then(response => response.json())
-              .then(data => {
-                  if (data.success) {
-                      console.log('View tracked:', data.clickId);
-                      window.currentClickId = data.clickId;
-                  }
-              })
-              .catch(err => console.error('Track view error:', err));
+            // Если есть clickId из Railway, используем его
+            if (queryClickId) {
+                window.currentClickId = queryClickId;
+                console.log('Using clickId from Railway:', queryClickId);
+            } else {
+                // Иначе отправляем трекинг просмотра на backend
+                const API_URL = 'https://shibo-tg-backend-production.up.railway.app';
+                fetch(`${API_URL}/api/track-view`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ partnerCode })
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          console.log('View tracked:', data.clickId);
+                          window.currentClickId = data.clickId;
+                      }
+                  })
+                  .catch(err => console.error('Track view error:', err));
+            }
         }
         
         function trackAndRedirect(type) {

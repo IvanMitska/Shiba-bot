@@ -1,6 +1,5 @@
 [build]
-  command = ""
-  publish = "build"
+  publish = "landing-static"
 
 # Редирект партнерских ссылок на Railway для трекинга
 [[redirects]]

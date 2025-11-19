@@ -217,8 +217,8 @@ class TrackingService {
       const { limit = 50, offset = 0, period = 'all' } = options;
 
       const where = {
-        partnerId,
-        telegramUserId: { [Op.not]: null } // Only clicks with Telegram user data
+        partnerId
+        // Убрал фильтр по telegramUserId - показываем ВСЕ клики
       };
 
       if (period !== 'all') {
