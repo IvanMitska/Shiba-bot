@@ -6,20 +6,22 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        'porsche': ['Porsche', 'sans-serif'],
+        'sans': ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
       },
       colors: {
         primary: {
+          50: '#fff7ed',
+          100: '#ffedd5',
+          200: '#fed7aa',
+          300: '#fdba74',
+          400: '#fb923c',
           500: '#FF6B35',
           600: '#E55A2B',
           700: '#D04A20',
+          800: '#9a3412',
+          900: '#7c2d12',
           orange: '#FF6B35',
           'orange-dark': '#E55A2B',
-        },
-        gradient: {
-          from: '#667eea',
-          via: '#764ba2',
-          to: '#f093fb',
         },
         dark: {
           50: '#f8fafc',
@@ -32,12 +34,13 @@ module.exports = {
           700: '#334155',
           800: '#1e293b',
           900: '#0f172a',
-          bg: '#0f0f0f',
-          card: '#1a1a1a',
-          'card-hover': '#242424',
-          border: '#2a2a2a',
+          950: '#0a0a0b',
+          bg: '#0a0a0b',
+          card: '#141416',
+          'card-hover': '#1c1c1f',
+          border: '#27272a',
           text: '#ffffff',
-          'text-secondary': '#a0a0a0',
+          'text-secondary': '#a1a1aa',
         },
         accent: {
           cyan: '#06b6d4',
@@ -46,27 +49,27 @@ module.exports = {
           green: '#10b981',
         },
         telegram: {
-          blue: '#2AABEE',
-          dark: '#229ED9',
+          blue: '#0ea5e9',
+          dark: '#0284c7',
         },
         whatsapp: {
-          green: '#25D366',
-          dark: '#128C7E',
+          green: '#10b981',
+          dark: '#059669',
         }
       },
+      borderWidth: {
+        '3': '3px',
+      },
+      spacing: {
+        '18': '4.5rem',
+      },
       animation: {
-        'fade-in': 'fadeIn 0.5s ease-in-out',
-        'fade-in-up': 'fadeInUp 0.6s ease-out',
+        'fade-in': 'fadeIn 0.3s ease-out',
+        'fade-in-up': 'fadeInUp 0.4s ease-out',
         'slide-up': 'slideUp 0.3s ease-out',
         'slide-down': 'slideDown 0.3s ease-out',
-        'slide-in-right': 'slideInRight 0.4s ease-out',
-        'slide-in-left': 'slideInLeft 0.4s ease-out',
-        'bounce-in': 'bounceIn 0.6s ease-out',
-        'scale-in': 'scaleIn 0.3s ease-out',
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'gradient': 'gradient 6s ease infinite',
-        'float': 'float 3s ease-in-out infinite',
-        'glow': 'glow 2s ease-in-out infinite alternate',
+        'scale-in': 'scaleIn 0.2s ease-out',
+        'shimmer': 'shimmer 1.5s infinite',
       },
       keyframes: {
         fadeIn: {
@@ -74,7 +77,7 @@ module.exports = {
           '100%': { opacity: '1' },
         },
         fadeInUp: {
-          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
         slideUp: {
@@ -85,37 +88,19 @@ module.exports = {
           '0%': { transform: 'translateY(-10px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
         },
-        slideInRight: {
-          '0%': { transform: 'translateX(100%)', opacity: '0' },
-          '100%': { transform: 'translateX(0)', opacity: '1' },
-        },
-        slideInLeft: {
-          '0%': { transform: 'translateX(-100%)', opacity: '0' },
-          '100%': { transform: 'translateX(0)', opacity: '1' },
-        },
-        bounceIn: {
-          '0%': { transform: 'scale(0.3)', opacity: '0' },
-          '50%': { transform: 'scale(1.05)' },
-          '70%': { transform: 'scale(0.9)' },
-          '100%': { transform: 'scale(1)', opacity: '1' },
-        },
         scaleIn: {
-          '0%': { transform: 'scale(0)', opacity: '0' },
+          '0%': { transform: 'scale(0.95)', opacity: '0' },
           '100%': { transform: 'scale(1)', opacity: '1' },
         },
-        gradient: {
-          '0%, 100%': { backgroundPosition: '0% 50%' },
-          '50%': { backgroundPosition: '100% 50%' },
+        shimmer: {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
         },
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-10px)' },
-        },
-        glow: {
-          '0%': { boxShadow: '0 0 5px rgba(99, 102, 241, 0.5)' },
-          '100%': { boxShadow: '0 0 20px rgba(99, 102, 241, 0.8)' },
-        },
-      }
+      },
+      boxShadow: {
+        'glow': '0 0 20px rgba(255, 107, 53, 0.3)',
+        'glow-lg': '0 0 40px rgba(255, 107, 53, 0.4)',
+      },
     },
   },
   plugins: [],

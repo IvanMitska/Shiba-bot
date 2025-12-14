@@ -1,8 +1,52 @@
 const express = require('express');
 const router = express.Router();
+const jwt = require('jsonwebtoken');
 const { Partner, Click, Admin, Settings, sequelize } = require('../../database/models');
 const { Op } = require('sequelize');
 const logger = require('../../utils/logger');
+
+// Admin login endpoint - MUST be before auth middleware
+router.post('/login', async (req, res) => {
+  try {
+    const { secretKey } = req.body;
+    const adminSecret = process.env.ADMIN_SECRET || 'shibo-admin-2024';
+
+    if (secretKey !== adminSecret) {
+      return res.status(401).json({ error: 'Invalid secret key' });
+    }
+
+    // Find the first active admin (or create one if doesn't exist)
+    let admin = await Admin.findOne({ where: { isActive: true } });
+
+    if (!admin) {
+      return res.status(404).json({ error: 'No active admin found' });
+    }
+
+    const token = jwt.sign(
+      { adminId: admin.id, type: 'admin' },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    await admin.updateLastLogin();
+
+    logger.info(`Admin ${admin.id} logged in`);
+
+    res.json({
+      success: true,
+      token,
+      admin: {
+        id: admin.id,
+        username: admin.username,
+        role: admin.role,
+        permissions: admin.permissions
+      }
+    });
+  } catch (error) {
+    logger.error('Admin login error:', error);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
 
 const adminAuthMiddleware = async (req, res, next) => {
   try {
@@ -151,6 +195,53 @@ router.patch('/partners/:id', async (req, res) => {
     res.json({ success: true, partner });
   } catch (error) {
     logger.error('Error updating partner:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get all clicks from all partners
+router.get('/clicks', async (req, res) => {
+  try {
+    if (!req.admin.hasPermission('viewPartners')) {
+      return res.status(403).json({ error: 'Insufficient permissions' });
+    }
+
+    const { limit = 100, offset = 0, partnerId, startDate, endDate } = req.query;
+
+    const where = {};
+
+    if (partnerId) {
+      where.partnerId = parseInt(partnerId);
+    }
+
+    if (startDate && endDate) {
+      where.clickedAt = {
+        [Op.between]: [new Date(startDate), new Date(endDate)]
+      };
+    }
+
+    const clicks = await Click.findAll({
+      where,
+      include: [{
+        model: Partner,
+        as: 'partner',
+        attributes: ['id', 'username', 'firstName', 'lastName', 'uniqueCode']
+      }],
+      order: [['clickedAt', 'DESC']],
+      limit: parseInt(limit),
+      offset: parseInt(offset)
+    });
+
+    const total = await Click.count({ where });
+
+    res.json({
+      clicks,
+      total,
+      limit: parseInt(limit),
+      offset: parseInt(offset)
+    });
+  } catch (error) {
+    logger.error('Error getting all clicks:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });

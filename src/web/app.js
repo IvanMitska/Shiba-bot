@@ -198,6 +198,51 @@ class WebApp {
       }
     });
     
+    // Admin login - BEFORE auth middleware
+    this.app.post('/api/admin/login', async (req, res) => {
+      try {
+        const jwt = require('jsonwebtoken');
+        const { Admin } = require('../database/models');
+
+        const { secretKey } = req.body;
+        const adminSecret = process.env.ADMIN_SECRET || 'shibo-admin-2024';
+
+        if (secretKey !== adminSecret) {
+          return res.status(401).json({ error: 'Invalid secret key' });
+        }
+
+        let admin = await Admin.findOne({ where: { isActive: true } });
+
+        if (!admin) {
+          return res.status(404).json({ error: 'No active admin found' });
+        }
+
+        const token = jwt.sign(
+          { adminId: admin.id, type: 'admin' },
+          process.env.JWT_SECRET,
+          { expiresIn: '7d' }
+        );
+
+        await admin.updateLastLogin();
+
+        logger.info(`Admin ${admin.id} logged in`);
+
+        res.json({
+          success: true,
+          token,
+          admin: {
+            id: admin.id,
+            username: admin.username,
+            role: admin.role,
+            permissions: admin.permissions
+          }
+        });
+      } catch (error) {
+        logger.error('Admin login error:', error);
+        res.status(500).json({ error: 'Login failed' });
+      }
+    });
+
     this.app.use('/', trackingRoutes);
     this.app.use('/api', apiRoutes);
     this.app.use('/api/admin', adminRoutes);

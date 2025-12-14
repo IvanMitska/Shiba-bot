@@ -48,6 +48,7 @@ export const partnerAPI = {
 };
 
 export const adminAPI = {
+  login: (secretKey) => api.post('/admin/login', { secretKey }),
   getDashboard: () => api.get('/admin/dashboard'),
   getPartners: (params) => api.get('/admin/partners', { params }),
   getPartner: (id) => api.get(`/admin/partners/${id}`),
@@ -55,6 +56,7 @@ export const adminAPI = {
   getAnalytics: (days = 30) => api.get('/admin/analytics', { params: { days } }),
   getSettings: () => api.get('/admin/settings'),
   updateSetting: (key, data) => api.put(`/admin/settings/${key}`, data),
+  getAllClicks: (params) => api.get('/admin/clicks', { params }),
 };
 
 export const publicAPI = {

@@ -26,18 +26,17 @@ function App() {
   useEffect(() => {
     const init = async () => {
       try {
-        // Получаем токен из URL
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
         if (token) {
           localStorage.setItem('token', token);
           useStore.getState().setToken(token);
         }
-        
+
         const tgData = initTelegramWebApp();
         if (tgData) {
           setUser(tgData.user);
-          setTheme(tgData.colorScheme || 'light');
+          setTheme(tgData.colorScheme || 'dark');
         }
         setIsInitialized(true);
       } catch (error) {
@@ -45,14 +44,14 @@ function App() {
         setIsInitialized(true);
       }
     };
-    
+
     init();
   }, [setUser, setTheme]);
 
   if (!isInitialized) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-dark-bg">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-orange"></div>
+      <div className="flex items-center justify-center min-h-screen bg-[#0a0a0c]">
+        <div className="w-6 h-6 border-2 border-zinc-700 border-t-zinc-400 rounded-full animate-spin" />
       </div>
     );
   }
@@ -60,9 +59,9 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
-        <div className="min-h-screen bg-dark-bg font-porsche">
+        <div className="min-h-screen bg-[#0a0a0c]">
           <Navigation />
-          <main className="container mx-auto px-4 py-6">
+          <main className="container mx-auto px-4 md:px-8 py-6 md:py-10 max-w-4xl">
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/analytics" element={<Analytics />} />
@@ -75,11 +74,14 @@ function App() {
         <Toaster
           position="top-center"
           toastOptions={{
-            duration: 3000,
+            duration: 2000,
             style: {
-              background: '#1a1a1a',
-              color: '#ffffff',
-              border: '1px solid #2a2a2a',
+              background: '#18181b',
+              color: '#fff',
+              border: '1px solid #27272a',
+              borderRadius: '8px',
+              padding: '12px 16px',
+              fontSize: '14px',
             },
           }}
         />

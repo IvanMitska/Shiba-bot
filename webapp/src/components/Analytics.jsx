@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
+import { motion } from 'framer-motion';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,6 +15,7 @@ import {
   Filler
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import { FiTrendingUp, FiUsers, FiPercent, FiGlobe } from 'react-icons/fi';
 import { partnerAPI } from '../services/api';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -43,7 +45,7 @@ const Analytics = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-zinc-700 border-t-zinc-400 rounded-full animate-spin" />
       </div>
     );
   }
@@ -54,210 +56,199 @@ const Analytics = () => {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        display: false,
-      },
+      legend: { display: false },
       tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        backgroundColor: '#18181b',
+        titleColor: '#fff',
+        bodyColor: '#a1a1aa',
         padding: 12,
         cornerRadius: 8,
+        borderColor: '#27272a',
+        borderWidth: 1,
       },
     },
     scales: {
       y: {
         beginAtZero: true,
-        ticks: {
-          precision: 0,
-        },
+        grid: { color: '#1f1f23', drawBorder: false },
+        ticks: { color: '#52525b', font: { size: 12 } },
+      },
+      x: {
+        grid: { display: false },
+        ticks: { color: '#52525b', font: { size: 12 } },
       },
     },
   };
 
   const dailyChartData = {
-    labels: Object.keys(data?.dailyStats || {}).map(date => 
+    labels: Object.keys(data?.dailyStats || {}).map(date =>
       format(new Date(date), 'dd MMM', { locale: ru })
     ),
-    datasets: [
-      {
-        label: 'Переходы',
-        data: Object.values(data?.dailyStats || {}),
-        borderColor: '#2AABEE',
-        backgroundColor: 'rgba(42, 171, 238, 0.1)',
-        fill: true,
-        tension: 0.3,
-      },
-    ],
+    datasets: [{
+      data: Object.values(data?.dailyStats || {}),
+      borderColor: '#52525b',
+      backgroundColor: 'rgba(82, 82, 91, 0.1)',
+      fill: true,
+      tension: 0.3,
+      pointBackgroundColor: '#71717a',
+      pointBorderColor: '#71717a',
+      pointRadius: 4,
+      borderWidth: 2,
+    }],
   };
 
   const hourlyChartData = {
     labels: Array.from({ length: 24 }, (_, i) => `${i}:00`),
-    datasets: [
-      {
-        label: 'Активность по часам',
-        data: data?.hourlyStats || [],
-        backgroundColor: 'rgba(42, 171, 238, 0.6)',
-        borderColor: '#2AABEE',
-        borderWidth: 2,
-      },
-    ],
+    datasets: [{
+      data: data?.hourlyStats || [],
+      backgroundColor: '#27272a',
+      borderRadius: 4,
+    }],
   };
 
   const messengerChartData = {
     labels: ['WhatsApp', 'Telegram'],
-    datasets: [
-      {
-        data: [
-          data?.messengerStats?.whatsapp || 0,
-          data?.messengerStats?.telegram || 0,
-        ],
-        backgroundColor: ['#25D366', '#2AABEE'],
-        borderWidth: 0,
-      },
-    ],
+    datasets: [{
+      data: [data?.messengerStats?.whatsapp || 0, data?.messengerStats?.telegram || 0],
+      backgroundColor: ['#3f3f46', '#52525b'],
+      borderWidth: 0,
+    }],
   };
 
-  const deviceChartData = {
-    labels: Object.keys(data?.deviceStats || {}),
-    datasets: [
-      {
-        data: Object.values(data?.deviceStats || {}),
-        backgroundColor: [
-          '#FF6384',
-          '#36A2EB',
-          '#FFCE56',
-          '#4BC0C0',
-          '#9966FF',
-        ],
-        borderWidth: 0,
+  const doughnutOptions = {
+    ...chartOptions,
+    cutout: '70%',
+    plugins: {
+      ...chartOptions.plugins,
+      legend: {
+        display: true,
+        position: 'bottom',
+        labels: { color: '#71717a', padding: 16, usePointStyle: true, font: { size: 12 } },
       },
-    ],
+    },
   };
+
+  const periods = [
+    { value: 7, label: '7 дней' },
+    { value: 14, label: '14 дней' },
+    { value: 30, label: '30 дней' },
+    { value: 90, label: '90 дней' },
+  ];
 
   return (
-    <div className="space-y-6">
-      <div className="card">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Аналитика</h1>
-          <select
-            value={period}
-            onChange={(e) => setPeriod(Number(e.target.value))}
-            className="input w-auto"
-          >
-            <option value={7}>7 дней</option>
-            <option value={14}>14 дней</option>
-            <option value={30}>30 дней</option>
-            <option value={90}>90 дней</option>
-          </select>
+    <div className="space-y-6 md:space-y-8 pb-8">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex items-center justify-between"
+      >
+        <div>
+          <h1 className="text-xl md:text-2xl font-semibold text-white">Аналитика</h1>
+          <p className="text-zinc-500 text-sm md:text-base">Статистика переходов</p>
         </div>
+        <div className="flex items-center gap-1 bg-[#141419] border border-[#1f1f26] rounded-lg p-1">
+          {periods.map((p) => (
+            <button
+              key={p.value}
+              onClick={() => setPeriod(p.value)}
+              className={`px-2.5 md:px-3 py-1.5 rounded-md text-xs md:text-sm font-medium transition-colors ${
+                period === p.value
+                  ? 'bg-zinc-800 text-white'
+                  : 'text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <p className="text-3xl font-bold text-blue-600">
-              {data?.totalClicks || 0}
-            </p>
-            <p className="text-sm text-gray-600">Всего переходов</p>
-          </div>
-          <div className="text-center p-4 bg-green-50 rounded-lg">
-            <p className="text-3xl font-bold text-green-600">
-              {data?.uniqueVisitors || 0}
-            </p>
-            <p className="text-sm text-gray-600">Уникальных</p>
-          </div>
-          <div className="text-center p-4 bg-purple-50 rounded-lg">
-            <p className="text-3xl font-bold text-purple-600">
-              {data?.conversionRate || 0}%
-            </p>
-            <p className="text-sm text-gray-600">Конверсия</p>
-          </div>
-          <div className="text-center p-4 bg-orange-50 rounded-lg">
-            <p className="text-3xl font-bold text-orange-600">
-              {Object.keys(data?.countryStats || {}).length}
-            </p>
-            <p className="text-sm text-gray-600">Стран</p>
-          </div>
-        </div>
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        {[
+          { icon: FiTrendingUp, label: 'Переходы', value: data?.totalClicks || 0 },
+          { icon: FiUsers, label: 'Уникальные', value: data?.uniqueVisitors || 0 },
+          { icon: FiPercent, label: 'Конверсия', value: `${data?.conversionRate || 0}%` },
+          { icon: FiGlobe, label: 'Стран', value: Object.keys(data?.countryStats || {}).length },
+        ].map((stat, i) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05 }}
+            className="bg-[#141419] border border-[#1f1f26] rounded-xl md:rounded-2xl p-4 md:p-5 text-center"
+          >
+            <stat.icon className="w-4 h-4 md:w-5 md:h-5 text-zinc-500 mx-auto mb-2 md:mb-3" />
+            <div className="text-xl md:text-2xl font-semibold text-white">{stat.value}</div>
+            <div className="text-zinc-500 text-xs md:text-sm uppercase tracking-wider mt-1">{stat.label}</div>
+          </motion.div>
+        ))}
       </div>
 
-      <div
-        className="card"
+      {/* Daily Chart */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="bg-[#141419] border border-[#1f1f26] rounded-xl md:rounded-2xl p-4 md:p-6"
       >
-        <h2 className="text-xl font-semibold mb-4">Переходы по дням</h2>
-        <div className="h-64">
+        <h2 className="text-zinc-400 text-sm md:text-base font-medium mb-4 md:mb-6">Переходы по дням</h2>
+        <div className="h-56 md:h-72">
           <Line data={dailyChartData} options={chartOptions} />
         </div>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="card">
-          <h2 className="text-xl font-semibold mb-4">Активность по часам</h2>
-          <div className="h-64">
+      {/* Two columns */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="bg-[#141419] border border-[#1f1f26] rounded-xl md:rounded-2xl p-4 md:p-6"
+        >
+          <h2 className="text-zinc-400 text-sm md:text-base font-medium mb-4 md:mb-6">Активность по часам</h2>
+          <div className="h-48 md:h-56">
             <Bar data={hourlyChartData} options={chartOptions} />
           </div>
-        </div>
+        </motion.div>
 
-        <div className="card">
-          <h2 className="text-xl font-semibold mb-4">Выбор мессенджера</h2>
-          <div className="h-64 flex items-center justify-center">
-            <div className="w-48 h-48">
-              <Doughnut 
-                data={messengerChartData} 
-                options={{
-                  ...chartOptions,
-                  plugins: {
-                    ...chartOptions.plugins,
-                    legend: {
-                      display: true,
-                      position: 'bottom',
-                    },
-                  },
-                }}
-              />
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-[#141419] border border-[#1f1f26] rounded-xl md:rounded-2xl p-4 md:p-6"
+        >
+          <h2 className="text-zinc-400 text-sm md:text-base font-medium mb-4 md:mb-6">Мессенджеры</h2>
+          <div className="h-48 md:h-56 flex items-center justify-center">
+            <div className="w-36 h-36 md:w-44 md:h-44">
+              <Doughnut data={messengerChartData} options={doughnutOptions} />
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
-      <div
-        className="card"
-      >
-        <h2 className="text-xl font-semibold mb-4">География переходов</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {Object.entries(data?.countryStats || {})
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 8)
-            .map(([country, count], index) => (
-              <div
-                key={country}
-                className="p-3 bg-gray-50 rounded-lg text-center"
-              >
-                <p className="font-semibold text-gray-800">{country}</p>
-                <p className="text-2xl font-bold text-telegram-blue">{count}</p>
-              </div>
-            ))}
-        </div>
-      </div>
-
-      {Object.keys(data?.deviceStats || {}).length > 0 && (
-        <div className="card">
-          <h2 className="text-xl font-semibold mb-4">Устройства</h2>
-          <div className="h-64 flex items-center justify-center">
-            <div className="w-48 h-48">
-              <Doughnut 
-                data={deviceChartData} 
-                options={{
-                  ...chartOptions,
-                  plugins: {
-                    ...chartOptions.plugins,
-                    legend: {
-                      display: true,
-                      position: 'bottom',
-                    },
-                  },
-                }}
-              />
-            </div>
+      {/* Geography */}
+      {Object.keys(data?.countryStats || {}).length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="bg-[#141419] border border-[#1f1f26] rounded-xl md:rounded-2xl p-4 md:p-6"
+        >
+          <h2 className="text-zinc-400 text-sm md:text-base font-medium mb-4">География</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {Object.entries(data?.countryStats || {})
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 8)
+              .map(([country, count]) => (
+                <div key={country} className="bg-[#0c0c0f] border border-[#1f1f26] rounded-xl p-3 md:p-4 text-center">
+                  <div className="text-white font-semibold text-lg md:text-xl">{count}</div>
+                  <div className="text-zinc-500 text-xs md:text-sm truncate mt-1">{country}</div>
+                </div>
+              ))}
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );

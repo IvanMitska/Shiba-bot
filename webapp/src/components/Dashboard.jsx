@@ -1,10 +1,30 @@
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
-import { FiCopy, FiRefreshCw, FiTrendingUp, FiUsers, FiMousePointer, FiEye, FiShare2, FiExternalLink } from 'react-icons/fi';
-import { FaWhatsapp, FaTelegram } from 'react-icons/fa';
+import { motion } from 'framer-motion';
+import { FiCopy, FiRefreshCw, FiArrowRight, FiMousePointer, FiUsers, FiMessageCircle, FiSend, FiExternalLink, FiTrendingUp } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { partnerAPI } from '../services/api';
 import { hapticFeedback } from '../services/telegram';
+
+const StatCard = ({ icon: Icon, label, value, subtext, delay }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay }}
+    className="bg-[#141419] border border-[#1f1f26] rounded-xl md:rounded-2xl p-4 md:p-6"
+  >
+    <div className="flex items-center justify-between mb-3 md:mb-4">
+      <Icon className="w-4 h-4 md:w-5 md:h-5 text-zinc-500" />
+      {subtext && (
+        <span className="text-[10px] md:text-xs text-zinc-600 uppercase tracking-wider">{subtext}</span>
+      )}
+    </div>
+    <div className="text-2xl md:text-4xl font-semibold text-white mb-0.5 md:mb-1 tabular-nums">
+      {value.toLocaleString()}
+    </div>
+    <div className="text-zinc-500 text-xs md:text-sm">{label}</div>
+  </motion.div>
+);
 
 const Dashboard = () => {
   const [, setCopiedLink] = useState(false);
@@ -18,9 +38,9 @@ const Dashboard = () => {
   const { data: stats, isLoading: statsLoading, refetch } = useQuery(
     'partnerStats',
     () => partnerAPI.getStats('today'),
-    { 
+    {
       staleTime: 60 * 1000,
-      refetchInterval: 30 * 1000 
+      refetchInterval: 30 * 1000
     }
   );
 
@@ -29,7 +49,7 @@ const Dashboard = () => {
       navigator.clipboard.writeText(partnerInfo.data.partnerLink);
       setCopiedLink(true);
       hapticFeedback('success');
-      toast.success('Ссылка скопирована!');
+      toast.success('Ссылка скопирована');
       setTimeout(() => setCopiedLink(false), 2000);
     }
   };
@@ -37,18 +57,6 @@ const Dashboard = () => {
   const handleRefresh = () => {
     refetch();
     hapticFeedback('light');
-    toast.success('Данные обновлены');
-  };
-
-  const handleShare = () => {
-    if (partnerInfo?.data?.partnerLink && navigator.share) {
-      navigator.share({
-        title: 'Моя партнерская ссылка',
-        text: 'Переходите по ссылке для аренды транспорта',
-        url: partnerInfo.data.partnerLink,
-      }).catch(() => {});
-      hapticFeedback('medium');
-    }
   };
 
   const handleOpenLanding = () => {
@@ -61,7 +69,7 @@ const Dashboard = () => {
   if (infoLoading || statsLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-16 h-16 border-4 border-primary-orange border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-zinc-700 border-t-zinc-400 rounded-full animate-spin" />
       </div>
     );
   }
@@ -70,219 +78,153 @@ const Dashboard = () => {
   const statistics = stats?.data;
 
   return (
-    <div className="min-h-screen bg-dark-bg">
-      {/* Header with Logo */}
-      <div className="bg-dark-card border-b border-dark-border">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary-orange rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-lg">S</span>
-              </div>
-              <h1 className="text-xl font-bold text-white">SHIBA CARS</h1>
-            </div>
-            <button
-              onClick={handleRefresh}
-              className="p-2 text-dark-text-secondary hover:text-primary-orange transition-colors"
-            >
-              <FiRefreshCw className="w-5 h-5" />
-            </button>
-          </div>
+    <div className="space-y-6 md:space-y-8 pb-8">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex items-center justify-between"
+      >
+        <div>
+          <h1 className="text-xl md:text-2xl font-semibold text-white">
+            {partner?.firstName || 'Партнер'}
+          </h1>
+          <p className="text-zinc-500 text-sm md:text-base">Панель управления</p>
         </div>
+        <button
+          onClick={handleRefresh}
+          className="p-2.5 md:p-3 text-zinc-500 hover:text-zinc-300 rounded-lg hover:bg-zinc-800/50 transition-colors"
+        >
+          <FiRefreshCw className="w-4 h-4 md:w-5 md:h-5" />
+        </button>
+      </motion.div>
+
+      {/* Partner Link */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="bg-[#141419] border border-[#1f1f26] rounded-xl md:rounded-2xl p-4 md:p-6"
+      >
+        <div className="flex items-center justify-between mb-3 md:mb-4">
+          <span className="text-zinc-400 text-sm md:text-base font-medium">Партнерская ссылка</span>
+          <button
+            onClick={handleCopyLink}
+            className="flex items-center gap-1.5 text-xs md:text-sm text-zinc-500 hover:text-white transition-colors"
+          >
+            <FiCopy className="w-3.5 h-3.5 md:w-4 md:h-4" />
+            <span>Копировать</span>
+          </button>
+        </div>
+        <div className="bg-[#0c0c0f] rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 border border-[#1f1f26]">
+          <code className="text-zinc-300 text-sm md:text-base break-all">
+            {partnerInfo?.data?.partnerLink || 'Загрузка...'}
+          </code>
+        </div>
+      </motion.div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3 md:gap-4">
+        <StatCard
+          icon={FiMousePointer}
+          label="Всего кликов"
+          value={statistics?.totalClicks || 0}
+          subtext="за все время"
+          delay={0.1}
+        />
+        <StatCard
+          icon={FiUsers}
+          label="Уникальных"
+          value={statistics?.uniqueVisitors || 0}
+          subtext="посетителей"
+          delay={0.15}
+        />
+        <StatCard
+          icon={FiMessageCircle}
+          label="WhatsApp"
+          value={statistics?.whatsappClicks || 0}
+          delay={0.2}
+        />
+        <StatCard
+          icon={FiSend}
+          label="Telegram"
+          value={statistics?.telegramClicks || 0}
+          delay={0.25}
+        />
       </div>
 
-      <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Welcome Section */}
-        <div className="bg-dark-card rounded-2xl p-6 border border-dark-border">
-          <h2 className="text-2xl font-bold text-white mb-2">
-            Добро пожаловать, {partner?.firstName || 'Партнер'}!
-          </h2>
-          <p className="text-dark-text-secondary">
-            Управляйте своими партнерскими ссылками
-          </p>
-        </div>
+      {/* Actions */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="space-y-2 md:space-y-3"
+      >
+        <button
+          onClick={handleCopyLink}
+          className="w-full flex items-center justify-between bg-[#141419] hover:bg-[#1a1a21] border border-[#1f1f26] text-white px-4 md:px-6 py-3.5 md:py-4 rounded-xl md:rounded-2xl transition-colors group"
+        >
+          <div className="flex items-center gap-3 md:gap-4">
+            <FiCopy className="w-4 h-4 md:w-5 md:h-5 text-zinc-500" />
+            <span className="text-sm md:text-base font-medium">Скопировать ссылку</span>
+          </div>
+          <FiArrowRight className="w-4 h-4 md:w-5 md:h-5 text-zinc-600 group-hover:text-zinc-400 transition-colors" />
+        </button>
 
-        {/* Partner Link Card */}
-        <div className="bg-gradient-to-r from-primary-orange to-primary-orange-dark rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-white font-semibold text-lg">Ваша партнерская ссылка</h3>
-            <div className="flex space-x-2">
-              <button
-                onClick={handleCopyLink}
-                className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+        <button
+          onClick={handleOpenLanding}
+          className="w-full flex items-center justify-between bg-[#141419] hover:bg-[#1a1a21] border border-[#1f1f26] text-white px-4 md:px-6 py-3.5 md:py-4 rounded-xl md:rounded-2xl transition-colors group"
+        >
+          <div className="flex items-center gap-3 md:gap-4">
+            <FiExternalLink className="w-4 h-4 md:w-5 md:h-5 text-zinc-500" />
+            <span className="text-sm md:text-base font-medium">Открыть лендинг</span>
+          </div>
+          <FiArrowRight className="w-4 h-4 md:w-5 md:h-5 text-zinc-600 group-hover:text-zinc-400 transition-colors" />
+        </button>
+
+        <button
+          onClick={() => window.location.href = '/analytics'}
+          className="w-full flex items-center justify-between bg-[#141419] hover:bg-[#1a1a21] border border-[#1f1f26] text-white px-4 md:px-6 py-3.5 md:py-4 rounded-xl md:rounded-2xl transition-colors group"
+        >
+          <div className="flex items-center gap-3 md:gap-4">
+            <FiTrendingUp className="w-4 h-4 md:w-5 md:h-5 text-zinc-500" />
+            <span className="text-sm md:text-base font-medium">Аналитика</span>
+          </div>
+          <FiArrowRight className="w-4 h-4 md:w-5 md:h-5 text-zinc-600 group-hover:text-zinc-400 transition-colors" />
+        </button>
+      </motion.div>
+
+      {/* Recent Activity */}
+      {statistics?.recentClicks?.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="bg-[#141419] border border-[#1f1f26] rounded-xl md:rounded-2xl p-4 md:p-6"
+        >
+          <h3 className="text-zinc-400 text-sm md:text-base font-medium mb-3 md:mb-4">Последние переходы</h3>
+          <div className="space-y-2 md:space-y-3">
+            {statistics.recentClicks.slice(0, 5).map((click, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between py-2 md:py-3 border-b border-[#1f1f26] last:border-0"
               >
-                <FiCopy className="w-5 h-5 text-white" />
-              </button>
-              {navigator.share && (
-                <button
-                  onClick={handleShare}
-                  className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
-                >
-                  <FiShare2 className="w-5 h-5 text-white" />
-                </button>
-              )}
-            </div>
-          </div>
-          <div className="bg-black/20 rounded-lg p-3">
-            <code className="text-white text-sm break-all">
-              {partnerInfo?.data?.partnerLink || 'Загрузка...'}
-            </code>
-          </div>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          <div
-            className="bg-dark-card rounded-2xl p-6 border border-dark-border"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <FiMousePointer className="w-6 h-6 text-primary-orange" />
-              {statistics?.changeStats?.totalClicksChange && (
-                <span className={`text-xs font-semibold ${
-                  statistics.changeStats.totalClicksChange >= 0 ? 'text-green-500' : 'text-red-500'
-                }`}>
-                  {statistics.changeStats.totalClicksChange >= 0 ? '+' : ''}{statistics.changeStats.totalClicksChange}%
-                </span>
-              )}
-            </div>
-            <div className="text-3xl font-bold text-white mb-1">
-              {statistics?.totalClicks || 0}
-            </div>
-            <div className="text-dark-text-secondary text-sm">Всего кликов</div>
-          </div>
-
-          <div
-            className="bg-dark-card rounded-2xl p-6 border border-dark-border"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <FiUsers className="w-6 h-6 text-primary-orange" />
-              {statistics?.changeStats?.uniqueVisitorsChange && (
-                <span className={`text-xs font-semibold ${
-                  statistics.changeStats.uniqueVisitorsChange >= 0 ? 'text-green-500' : 'text-red-500'
-                }`}>
-                  {statistics.changeStats.uniqueVisitorsChange >= 0 ? '+' : ''}{statistics.changeStats.uniqueVisitorsChange}%
-                </span>
-              )}
-            </div>
-            <div className="text-3xl font-bold text-white mb-1">
-              {statistics?.uniqueVisitors || 0}
-            </div>
-            <div className="text-dark-text-secondary text-sm">Уникальных посетителей</div>
-          </div>
-
-          <div
-            className="bg-dark-card rounded-2xl p-6 border border-dark-border"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <FaWhatsapp className="w-6 h-6 text-whatsapp-green" />
-              {statistics?.changeStats?.whatsappClicksChange && (
-                <span className={`text-xs font-semibold ${
-                  statistics.changeStats.whatsappClicksChange >= 0 ? 'text-green-500' : 'text-red-500'
-                }`}>
-                  {statistics.changeStats.whatsappClicksChange >= 0 ? '+' : ''}{statistics.changeStats.whatsappClicksChange}%
-                </span>
-              )}
-            </div>
-            <div className="text-3xl font-bold text-white mb-1">
-              {statistics?.whatsappClicks || 0}
-            </div>
-            <div className="text-dark-text-secondary text-sm">WhatsApp переходы</div>
-          </div>
-
-          <div
-            className="bg-dark-card rounded-2xl p-6 border border-dark-border"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <FaTelegram className="w-6 h-6 text-telegram-blue" />
-              {statistics?.changeStats?.telegramClicksChange && (
-                <span className={`text-xs font-semibold ${
-                  statistics.changeStats.telegramClicksChange >= 0 ? 'text-green-500' : 'text-red-500'
-                }`}>
-                  {statistics.changeStats.telegramClicksChange >= 0 ? '+' : ''}{statistics.changeStats.telegramClicksChange}%
-                </span>
-              )}
-            </div>
-            <div className="text-3xl font-bold text-white mb-1">
-              {statistics?.telegramClicks || 0}
-            </div>
-            <div className="text-dark-text-secondary text-sm">Telegram переходы</div>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div
-          className="bg-dark-card rounded-2xl p-6 border border-dark-border"
-        >
-          <h3 className="text-white font-semibold text-lg mb-4 flex items-center">
-            <span className="mr-2">⚡</span> Быстрые действия
-          </h3>
-          <div className="grid grid-cols-1 gap-3">
-            <button
-              onClick={handleCopyLink}
-              className="w-full bg-primary-orange hover:bg-primary-orange-dark text-white font-medium py-3 px-4 rounded-xl transition-colors flex items-center justify-center space-x-2"
-            >
-              <FiShare2 className="w-5 h-5" />
-              <span>Поделиться ссылкой</span>
-            </button>
-
-            <button
-              onClick={handleOpenLanding}
-              className="w-full bg-gradient-to-r from-primary-orange to-primary-orange-dark hover:from-primary-orange-dark hover:to-primary-orange text-white font-medium py-3 px-4 rounded-xl transition-all flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"
-            >
-              <FiExternalLink className="w-5 h-5" />
-              <span>Открыть лендинг</span>
-            </button>
-
-            <button
-              onClick={() => window.location.href = '/analytics'}
-              className="w-full bg-dark-bg hover:bg-dark-card-hover text-white font-medium py-3 px-4 rounded-xl transition-colors flex items-center justify-center space-x-2 border border-dark-border"
-            >
-              <FiTrendingUp className="w-5 h-5" />
-              <span>Посмотреть аналитику</span>
-            </button>
-
-            <button
-              onClick={() => window.location.href = '/history'}
-              className="w-full bg-dark-bg hover:bg-dark-card-hover text-white font-medium py-3 px-4 rounded-xl transition-colors flex items-center justify-center space-x-2 border border-dark-border"
-            >
-              <FiEye className="w-5 h-5" />
-              <span>История кликов</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Recent Activity */}
-        <div
-          className="bg-dark-card rounded-2xl p-6 border border-dark-border"
-        >
-          <h3 className="text-white font-semibold text-lg mb-4 flex items-center">
-            <span className="mr-2">📊</span> Последняя активность
-          </h3>
-          <div className="space-y-3">
-            {statistics?.recentClicks?.length > 0 ? (
-              statistics.recentClicks.slice(0, 5).map((click, index) => (
-                <div key={index} className="flex items-center justify-between py-2 border-b border-dark-border last:border-0">
-                  <div className="flex items-center space-x-3">
-                    {click.type === 'whatsapp' ? (
-                      <FaWhatsapp className="w-5 h-5 text-whatsapp-green" />
-                    ) : (
-                      <FaTelegram className="w-5 h-5 text-telegram-blue" />
-                    )}
-                    <div>
-                      <div className="text-white text-sm">Клик по {click.type}</div>
-                      <div className="text-dark-text-secondary text-xs">{click.time}</div>
-                    </div>
-                  </div>
+                <div className="flex items-center gap-2.5 md:gap-3">
+                  {click.type === 'whatsapp' ? (
+                    <FiMessageCircle className="w-4 h-4 md:w-5 md:h-5 text-zinc-500" />
+                  ) : (
+                    <FiSend className="w-4 h-4 md:w-5 md:h-5 text-zinc-500" />
+                  )}
+                  <span className="text-zinc-300 text-sm md:text-base">
+                    {click.type === 'whatsapp' ? 'WhatsApp' : 'Telegram'}
+                  </span>
                 </div>
-              ))
-            ) : (
-              <div className="text-center py-8 text-dark-text-secondary">
-                Пока нет активности
+                <span className="text-zinc-600 text-xs md:text-sm">{click.time}</span>
               </div>
-            )}
+            ))}
           </div>
-        </div>
-      </div>
+        </motion.div>
+      )}
     </div>
   );
 };
