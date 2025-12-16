@@ -63,6 +63,7 @@ async function startApplication() {
     // Setup CORS
     const allowedOrigins = [
       'https://shiba-cars-partners.netlify.app',
+      'https://shibacars-admin.netlify.app',
       'https://shiba-cars-phuket.com',
       'https://www.shiba-cars-phuket.com',
       'http://localhost:3000',
@@ -116,6 +117,51 @@ async function startApplication() {
     
     app.use('/api/', limiter);
     
+    // Admin login endpoint - NO AUTH REQUIRED
+    app.post('/admin-login', async (req, res) => {
+      try {
+        const jwt = require('jsonwebtoken');
+        const { Admin } = require('./database/models');
+
+        const { secretKey } = req.body;
+        const adminSecret = process.env.ADMIN_SECRET || 'shibo-admin-2024';
+
+        if (secretKey !== adminSecret) {
+          return res.status(401).json({ error: 'Invalid secret key' });
+        }
+
+        let admin = await Admin.findOne({ where: { isActive: true } });
+
+        if (!admin) {
+          return res.status(404).json({ error: 'No active admin found' });
+        }
+
+        const token = jwt.sign(
+          { adminId: admin.id, type: 'admin' },
+          process.env.JWT_SECRET,
+          { expiresIn: '7d' }
+        );
+
+        await admin.updateLastLogin();
+
+        console.log(`Admin ${admin.id} logged in`);
+
+        res.json({
+          success: true,
+          token,
+          admin: {
+            id: admin.id,
+            username: admin.username,
+            role: admin.role,
+            permissions: admin.permissions
+          }
+        });
+      } catch (error) {
+        console.error('Admin login error:', error);
+        res.status(500).json({ error: 'Login failed' });
+      }
+    });
+
     // Health check endpoint
     app.get('/health', (req, res) => {
       res.json({
@@ -198,6 +244,15 @@ async function startApplication() {
     // Handle React Router for telegram-webapp
     app.get('/telegram-webapp/*', (req, res) => {
       res.sendFile(path.join(__dirname, '../telegram-webapp/build/index.html'));
+    });
+
+    // Serve admin panel static files (must be before /admin route)
+    app.use('/static', express.static(path.join(__dirname, '../webapp/build/static')));
+
+    // Serve admin panel (webapp)
+    app.use('/admin', express.static(path.join(__dirname, '../webapp/build')));
+    app.get('/admin/*', (req, res) => {
+      res.sendFile(path.join(__dirname, '../webapp/build/index.html'));
     });
 
     // Initialize bot BEFORE starting server so webhook route is registered
