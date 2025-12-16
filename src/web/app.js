@@ -87,6 +87,51 @@ class WebApp {
   }
   
   setupRoutes() {
+    // Admin login - completely separate endpoint
+    this.app.post('/admin-login', async (req, res) => {
+      try {
+        const jwt = require('jsonwebtoken');
+        const { Admin } = require('../database/models');
+
+        const { secretKey } = req.body;
+        const adminSecret = process.env.ADMIN_SECRET || 'shibo-admin-2024';
+
+        if (secretKey !== adminSecret) {
+          return res.status(401).json({ error: 'Invalid secret key' });
+        }
+
+        let admin = await Admin.findOne({ where: { isActive: true } });
+
+        if (!admin) {
+          return res.status(404).json({ error: 'No active admin found' });
+        }
+
+        const token = jwt.sign(
+          { adminId: admin.id, type: 'admin' },
+          process.env.JWT_SECRET,
+          { expiresIn: '7d' }
+        );
+
+        await admin.updateLastLogin();
+
+        logger.info(`Admin ${admin.id} logged in`);
+
+        res.json({
+          success: true,
+          token,
+          admin: {
+            id: admin.id,
+            username: admin.username,
+            role: admin.role,
+            permissions: admin.permissions
+          }
+        });
+      } catch (error) {
+        logger.error('Admin login error:', error);
+        res.status(500).json({ error: 'Login failed' });
+      }
+    });
+
     // Health check endpoint - MUST be first for Railway
     this.app.get('/health', (req, res) => {
       res.json({
@@ -243,14 +288,27 @@ class WebApp {
       }
     });
 
-    this.app.use('/', trackingRoutes);
-    this.app.use('/api', apiRoutes);
-    this.app.use('/api/admin', adminRoutes);
-    this.app.use('/api/webapp', webappRoutes);
-    
+    // Admin panel routes - MUST be before other routes
+    this.app.get('/admin', (req, res) => {
+      console.log('=== ADMIN ROUTE HIT ===');
+      const filePath = path.join(__dirname, '../../webapp/build/index.html');
+      console.log('Serving file:', filePath);
+      res.sendFile(filePath);
+    });
+
+    this.app.get('/admin/*', (req, res) => {
+      res.sendFile(path.join(__dirname, '../../webapp/build/index.html'));
+    });
+
     this.app.get('/webapp/*', (req, res) => {
       res.sendFile(path.join(__dirname, '../../webapp/build/index.html'));
     });
+
+    this.app.use('/', trackingRoutes);
+    // Admin routes MUST come before /api routes to avoid auth middleware
+    this.app.use('/api/admin', adminRoutes);
+    this.app.use('/api/webapp', webappRoutes);
+    this.app.use('/api', apiRoutes);
     
     this.app.get('/telegram-webapp/*', (req, res) => {
       res.sendFile(path.join(__dirname, '../../telegram-webapp/build/index.html'));

@@ -251,62 +251,85 @@ router.get('/analytics', async (req, res) => {
     if (!req.admin.hasPermission('viewAnalytics')) {
       return res.status(403).json({ error: 'Insufficient permissions' });
     }
-    
-    const { days = 30 } = req.query;
-    const startDate = new Date(new Date().setDate(new Date().getDate() - days));
-    
-    const [
-      topPartners,
-      clicksByDay,
-      messengerStats,
-      deviceStats
-    ] = await Promise.all([
-      Partner.findAll({
-        attributes: ['id', 'username', 'firstName', 'totalClicks', 'uniqueVisitors'],
-        order: [['totalClicks', 'DESC']],
-        limit: 10
-      }),
-      
-      Click.findAll({
-        attributes: [
-          [sequelize.fn('DATE', sequelize.col('clicked_at')), 'date'],
-          [sequelize.fn('COUNT', sequelize.col('id')), 'count']
-        ],
-        where: {
-          clickedAt: { [Op.gte]: startDate }
-        },
-        group: [sequelize.fn('DATE', sequelize.col('clicked_at'))],
-        order: [[sequelize.fn('DATE', sequelize.col('clicked_at')), 'ASC']]
-      }),
-      
-      Click.findAll({
-        attributes: [
-          'redirect_type',
-          [sequelize.fn('COUNT', sequelize.col('id')), 'count']
-        ],
-        where: {
-          redirectType: { [Op.ne]: null }
-        },
-        group: ['redirect_type']
-      }),
-      
-      Click.findAll({
-        attributes: [
-          'device_type',
-          [sequelize.fn('COUNT', sequelize.col('id')), 'count']
-        ],
-        where: {
-          deviceType: { [Op.ne]: null }
-        },
-        group: ['device_type']
-      })
-    ]);
-    
+
+    const { days = 7 } = req.query;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - parseInt(days));
+    const endDate = new Date();
+
+    // Get all clicks for the period
+    const clicks = await Click.findAll({
+      where: {
+        clickedAt: {
+          [Op.between]: [startDate, endDate]
+        }
+      },
+      order: [['clickedAt', 'ASC']]
+    });
+
+    // Calculate stats in the same format as partner analytics
+    const dailyStats = {};
+    const hourlyStats = Array(24).fill(0);
+    const deviceStats = {};
+    const countryStats = {};
+    const messengerStats = { whatsapp: 0, telegram: 0 };
+    const ipHashes = new Set();
+
+    clicks.forEach(click => {
+      // Daily stats
+      const day = click.clickedAt.toISOString().split('T')[0];
+      dailyStats[day] = (dailyStats[day] || 0) + 1;
+
+      // Hourly stats
+      const hour = new Date(click.clickedAt).getHours();
+      hourlyStats[hour]++;
+
+      // Device stats
+      if (click.deviceType) {
+        deviceStats[click.deviceType] = (deviceStats[click.deviceType] || 0) + 1;
+      }
+
+      // Country stats
+      if (click.country) {
+        countryStats[click.country] = (countryStats[click.country] || 0) + 1;
+      }
+
+      // Messenger stats
+      if (click.redirectType === 'whatsapp') {
+        messengerStats.whatsapp++;
+      } else if (click.redirectType === 'telegram') {
+        messengerStats.telegram++;
+      }
+
+      // Unique visitors
+      if (click.ipHash) {
+        ipHashes.add(click.ipHash);
+      }
+    });
+
+    const totalClicks = clicks.length;
+    const uniqueVisitors = ipHashes.size;
+    const conversions = messengerStats.whatsapp + messengerStats.telegram;
+    const conversionRate = totalClicks > 0
+      ? ((conversions / totalClicks) * 100).toFixed(2)
+      : 0;
+
+    // Get ALL partners for admin view
+    const topPartners = await Partner.findAll({
+      attributes: ['id', 'username', 'firstName', 'lastName', 'uniqueCode', 'totalClicks', 'uniqueVisitors'],
+      order: [['totalClicks', 'DESC']]
+    });
+
     res.json({
-      topPartners,
-      clicksByDay,
+      dailyStats,
+      hourlyStats,
+      deviceStats,
+      countryStats,
       messengerStats,
-      deviceStats
+      conversionRate,
+      totalClicks,
+      uniqueVisitors,
+      topPartners
     });
   } catch (error) {
     logger.error('Error getting analytics:', error);

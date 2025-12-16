@@ -6,7 +6,7 @@
 [[redirects]]
   from = "/r/*"
   to = "https://shibo-tg-backend-production.up.railway.app/r/:splat"
-  status = 200
+  status = 302
   force = true
 
 # API редиректы на Railway

@@ -9,11 +9,9 @@ const Navigation = () => {
   const { isAdmin } = useStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Admin-only navigation
   const navItems = [
-    { path: '/', label: 'Главная', icon: FiHome },
-    { path: '/analytics', label: 'Аналитика', icon: FiBarChart2 },
-    { path: '/history', label: 'История', icon: FiClock },
-    ...(isAdmin ? [{ path: '/admin', label: 'Админ', icon: FiSettings }] : []),
+    { path: '/', label: 'Админ панель', icon: FiSettings },
   ];
 
   return (

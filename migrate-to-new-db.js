@@ -97,6 +97,7 @@ async function migrateData() {
         timestamps: false
       });
 
+  
       const Click = sequelize.define('Click', {
         id: {
           type: DataTypes.INTEGER,

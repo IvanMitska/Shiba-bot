@@ -48,7 +48,7 @@ export const partnerAPI = {
 };
 
 export const adminAPI = {
-  login: (secretKey) => api.post('/admin/login', { secretKey }),
+  login: (secretKey) => axios.post(`${API_URL.replace('/api', '')}/admin-login`, { secretKey }),
   getDashboard: () => api.get('/admin/dashboard'),
   getPartners: (params) => api.get('/admin/partners', { params }),
   getPartner: (id) => api.get(`/admin/partners/${id}`),

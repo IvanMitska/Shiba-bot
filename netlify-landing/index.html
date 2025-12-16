@@ -681,7 +681,7 @@
         
         // Получаем партнерский код из URL пути (/r/КОД) или query параметров
         const urlPath = window.location.pathname;
-        const pathMatch = urlPath.match(/\/r\/([a-zA-Z0-9]+)/);
+        const pathMatch = urlPath.match(/\/r\/([a-zA-Z0-9_-]+)/);
 
         // Также проверяем query параметры (для редиректа с Railway)
         const urlParams = new URLSearchParams(window.location.search);

@@ -16,9 +16,10 @@ import {
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import { FiTrendingUp, FiUsers, FiPercent, FiGlobe } from 'react-icons/fi';
-import { partnerAPI } from '../services/api';
+import { partnerAPI, adminAPI } from '../services/api';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { useStore } from '../store/store';
 
 ChartJS.register(
   CategoryScale,
@@ -35,11 +36,21 @@ ChartJS.register(
 
 const Analytics = () => {
   const [period, setPeriod] = useState(7);
+  const { isAdmin, setIsAdmin, setToken } = useStore();
+
+  // Check for admin token on mount
+  React.useEffect(() => {
+    const adminToken = localStorage.getItem('adminToken');
+    if (adminToken && !isAdmin) {
+      setIsAdmin(true);
+      setToken(adminToken);
+    }
+  }, [isAdmin, setIsAdmin, setToken]);
 
   const { data: analytics, isLoading } = useQuery(
-    ['analytics', period],
-    () => partnerAPI.getAnalytics(period),
-    { staleTime: 5 * 60 * 1000 }
+    ['analytics', period, isAdmin],
+    () => isAdmin ? adminAPI.getAnalytics(period) : partnerAPI.getAnalytics(period),
+    { staleTime: 5 * 60 * 1000, retry: false, enabled: isAdmin !== undefined }
   );
 
   if (isLoading) {
@@ -227,6 +238,43 @@ const Analytics = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Top Partners - Admin only */}
+      {isAdmin && data?.topPartners && data.topPartners.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.22 }}
+          className="bg-[#141419] border border-[#1f1f26] rounded-xl md:rounded-2xl p-4 md:p-6"
+        >
+          <h2 className="text-zinc-400 text-sm md:text-base font-medium mb-4">Все партнеры ({data.topPartners.length})</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-zinc-800">
+                  <th className="text-left py-3 px-2 text-zinc-500 font-medium">#</th>
+                  <th className="text-left py-3 px-2 text-zinc-500 font-medium">Партнер</th>
+                  <th className="text-center py-3 px-2 text-zinc-500 font-medium">Клики</th>
+                  <th className="text-center py-3 px-2 text-zinc-500 font-medium">Уникальные</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.topPartners.map((partner, index) => (
+                  <tr key={partner.id} className="border-b border-zinc-800/50">
+                    <td className="py-3 px-2 text-zinc-500">{index + 1}</td>
+                    <td className="py-3 px-2">
+                      <div className="text-white font-medium">{partner.firstName || partner.username}</div>
+                      {partner.username && <div className="text-zinc-500 text-xs">@{partner.username}</div>}
+                    </td>
+                    <td className="text-center py-3 px-2 text-white font-semibold">{partner.totalClicks}</td>
+                    <td className="text-center py-3 px-2 text-zinc-400">{partner.uniqueVisitors}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+      )}
 
       {/* Geography */}
       {Object.keys(data?.countryStats || {}).length > 0 && (

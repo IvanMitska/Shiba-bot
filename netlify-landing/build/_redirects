@@ -1,0 +1,9 @@
+# Partner link redirects to Railway for tracking
+/r/*  https://shibo-tg-backend-production.up.railway.app/r/:splat  302!
+
+# API redirects to Railway
+/api/*  https://shibo-tg-backend-production.up.railway.app/api/:splat  200
+
+# SPA fallback
+/*  /index.html  200
+# Cache bust Tue Dec  9 16:23:46 +07 2025
