@@ -5,7 +5,6 @@ import shibaLogo from '../assets/logo.png';
 
 const Dashboard = ({ data }) => {
   const [copied, setCopied] = useState(false);
-  const [copiedBot, setCopiedBot] = useState(false);
 
   const copyLink = () => {
     if (data?.partnerLink) {
@@ -22,27 +21,6 @@ const Dashboard = ({ data }) => {
       if (window.Telegram?.WebApp?.showPopup) {
         window.Telegram.WebApp.showPopup({
           message: 'Ссылка скопирована!',
-          buttons: [{ type: 'ok' }]
-        });
-      }
-    }
-  };
-
-  const copyBotLink = () => {
-    if (data?.telegramBotLink) {
-      navigator.clipboard.writeText(data.telegramBotLink);
-      setCopiedBot(true);
-      setTimeout(() => setCopiedBot(false), 2000);
-
-      // Haptic feedback
-      if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-      }
-
-      // Уведомление для пользователя
-      if (window.Telegram?.WebApp?.showPopup) {
-        window.Telegram.WebApp.showPopup({
-          message: 'Telegram ссылка скопирована!',
           buttons: [{ type: 'ok' }]
         });
       }
@@ -198,78 +176,7 @@ const Dashboard = ({ data }) => {
           </button>
         </div>
 
-        {/* Telegram Bot Link Info */}
-        {data?.telegramBotLink && (
-          <div style={{
-            marginTop: '20px',
-            padding: '16px',
-            background: 'rgba(34, 158, 217, 0.1)',
-            border: '1px solid rgba(34, 158, 217, 0.2)',
-            borderRadius: '12px'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              marginBottom: '10px'
-            }}>
-              <FaTelegram size={18} color="#229ED9" />
-              <h3 style={{
-                fontSize: '12px',
-                fontWeight: '600',
-                textTransform: 'uppercase',
-                letterSpacing: '1px',
-                color: '#229ED9'
-              }}>
-                Ссылка для Telegram (рекомендуется)
-              </h3>
-            </div>
-            <p style={{
-              fontSize: '12px',
-              color: 'var(--shiba-text-secondary)',
-              marginBottom: '12px',
-              lineHeight: '1.5'
-            }}>
-              Используйте эту ссылку для отслеживания пользователей Telegram. При переходе по ней автоматически сохраняются данные пользователя.
-            </p>
-            <div style={{
-              fontSize: '13px',
-              wordBreak: 'break-all',
-              padding: '12px',
-              background: 'rgba(34, 158, 217, 0.05)',
-              borderRadius: '8px',
-              border: '1px solid rgba(34, 158, 217, 0.15)',
-              color: '#ffffff',
-              fontWeight: '500',
-              fontFamily: 'monospace',
-              marginBottom: '10px'
-            }}>
-              {data.telegramBotLink}
-            </div>
-            <button className="button-primary" onClick={copyBotLink} style={{
-              background: copiedBot ? '#22c55e' : '#229ED9',
-              padding: '12px',
-              borderRadius: '10px',
-              fontSize: '13px',
-              fontWeight: '600',
-              letterSpacing: '0.3px',
-              border: 'none',
-              color: '#ffffff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              transition: 'all 0.2s ease',
-              cursor: 'pointer',
-              boxShadow: 'none',
-              width: '100%'
-            }}>
-              {copiedBot ? <FiCheck size={16} /> : <FiCopy size={16} />}
-              <span>{copiedBot ? 'Скопировано' : 'Копировать Telegram ссылку'}</span>
-            </button>
-          </div>
-        )}
-      </div>
+              </div>
 
       {/* Stats Grid */}
       <div className="stats-grid">
