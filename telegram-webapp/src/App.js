@@ -149,15 +149,18 @@ function App() {
                 }
               });
 
+              // Use real data from API (now counts from Click table)
               const partnerData = {
                 partnerId: response.data.uniqueCode || String(response.data.id),
                 partnerLink: response.data.partnerLink,
+                telegramBotLink: response.data.telegramBotLink,
                 registrationDate: response.data.createdAt,
                 statistics: {
                   todayClicks: statsResponse.data?.data?.totalClicks || 0,
+                  // Use data from partner/info (now calculated from Click table)
                   totalClicks: response.data.totalClicks || 0,
-                  whatsappClicks: statsResponse.data?.data?.whatsappClicks || response.data.whatsappClicks || 0,
-                  telegramClicks: statsResponse.data?.data?.telegramClicks || response.data.telegramClicks || 0,
+                  whatsappClicks: response.data.whatsappClicks || 0,
+                  telegramClicks: response.data.telegramClicks || 0,
                   conversionRate: 0,
                   earnings: 0
                 }

@@ -188,6 +188,14 @@ router.get('/partner/info', async (req, res) => {
     const partnerLink = partner.getPartnerLink();
     const telegramBotLink = partner.getTelegramBotLink();
 
+    // Get REAL stats from Click table instead of Partner model counters
+    const [totalClicks, uniqueVisitors, whatsappClicks, telegramClicks] = await Promise.all([
+      Click.count({ where: { partnerId: partner.id } }),
+      Click.count({ where: { partnerId: partner.id, isUnique: true } }),
+      Click.count({ where: { partnerId: partner.id, redirectType: 'whatsapp' } }),
+      Click.count({ where: { partnerId: partner.id, redirectType: 'telegram' } })
+    ]);
+
     res.json({
       id: partner.id,
       uniqueCode: partner.uniqueCode,
@@ -195,11 +203,11 @@ router.get('/partner/info', async (req, res) => {
       firstName: partner.firstName,
       lastName: partner.lastName,
       partnerLink,
-      telegramBotLink, // Add Telegram Bot Link for better tracking
-      totalClicks: partner.totalClicks,
-      uniqueVisitors: partner.uniqueVisitors,
-      whatsappClicks: partner.whatsappClicks,
-      telegramClicks: partner.telegramClicks,
+      telegramBotLink,
+      totalClicks,
+      uniqueVisitors,
+      whatsappClicks,
+      telegramClicks,
       createdAt: partner.createdAt
     });
   } catch (error) {
