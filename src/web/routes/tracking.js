@@ -142,21 +142,63 @@ router.get('/r/:code', async (req, res) => {
 router.post('/api/redirect', async (req, res) => {
   try {
     const { partnerCode, clickId, type } = req.body;
-    
+
     // Support both old (clickId) and new (partnerCode) methods
     if (!type || (!clickId && !partnerCode)) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Missing required parameters' 
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required parameters'
       });
     }
-    
-    // If we have partnerCode but no clickId, create a new click
-    if (partnerCode && !clickId) {
-      const ip = getClientIP(req);
-      const userAgent = req.headers['user-agent'] || '';
-      const referer = req.headers['referer'] || '';
-      
+
+    const ip = getClientIP(req);
+    const userAgent = req.headers['user-agent'] || '';
+    const referer = req.headers['referer'] || '';
+
+    // If we have clickId, verify it belongs to the same visitor
+    // If not, create a new click for this visitor
+    if (clickId) {
+      const { Click, Partner } = require('../../database/models');
+      const { getUniqueVisitorHash } = require('../../bot/utils');
+
+      const existingClick = await Click.findByPk(clickId, {
+        include: ['partner']
+      });
+
+      if (existingClick) {
+        const currentIpHash = getUniqueVisitorHash(ip, userAgent);
+
+        // Check if this is the same visitor (same IP + UserAgent)
+        if (existingClick.ipHash === currentIpHash) {
+          // Same visitor - update the existing click
+          const success = await trackingService.trackRedirect(clickId, type);
+          logger.info(`Updated redirect for click ${clickId}: ${type}`);
+          return res.json({ success });
+        } else {
+          // Different visitor - create a new click
+          logger.info(`Different visitor detected for click ${clickId}, creating new click`);
+
+          const trackingData = {
+            ip,
+            userAgent,
+            referer,
+            query: req.query,
+            sessionId: null
+          };
+
+          const result = await trackingService.trackClick(existingClick.partner.uniqueCode, trackingData);
+
+          if (result) {
+            const success = await trackingService.trackRedirect(result.click.id, type);
+            logger.info(`Created new ${type} click ${result.click.id} for different visitor`);
+            return res.json({ success, newClickId: result.click.id });
+          }
+        }
+      }
+    }
+
+    // If we have partnerCode but no valid clickId, create a new click
+    if (partnerCode) {
       const trackingData = {
         ip,
         userAgent,
@@ -164,31 +206,32 @@ router.post('/api/redirect', async (req, res) => {
         query: req.query,
         sessionId: null
       };
-      
+
       const result = await trackingService.trackClick(partnerCode, trackingData);
-      
+
       if (!result) {
-        return res.status(404).json({ 
-          success: false, 
-          error: 'Partner not found' 
+        return res.status(404).json({
+          success: false,
+          error: 'Partner not found'
         });
       }
-      
+
       // Now track the redirect
       const success = await trackingService.trackRedirect(result.click.id, type);
-      
+
       logger.info(`Tracked ${type} click for partner code: ${partnerCode}`);
-      res.json({ success });
+      res.json({ success, clickId: result.click.id });
     } else {
-      // Old method with clickId
-      const success = await trackingService.trackRedirect(clickId, type);
-      res.json({ success });
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid click or partner'
+      });
     }
   } catch (error) {
     logger.error('Error tracking redirect:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Internal server error' 
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
     });
   }
 });
