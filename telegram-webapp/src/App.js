@@ -359,7 +359,7 @@ function App() {
             <span className="tab-icon">
               <FiBarChart2 size={20} />
             </span>
-            <span className="tab-label">СТАТИСТИКА</span>
+            <span className="tab-label">СТАТ.</span>
           </button>
           <button
             className={`bottom-tab ${activeTab === 'traffic' ? 'active' : ''}`}

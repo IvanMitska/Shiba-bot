@@ -154,7 +154,7 @@ body {
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(20px) saturate(180%);
   z-index: 100;
-  padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0)) 12px;
+  padding: 8px 4px calc(8px + env(safe-area-inset-bottom, 0)) 4px;
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.3);
 }
 
@@ -164,7 +164,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 10px 8px;
+  padding: 10px 2px;
   background: transparent;
   border: none;
   border-radius: 12px;
@@ -172,7 +172,8 @@ body {
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
-  margin: 0 4px;
+  margin: 0 1px;
+  min-width: 0;
 }
 
 .bottom-tab .tab-icon {
@@ -184,10 +185,12 @@ body {
 }
 
 .bottom-tab .tab-label {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  overflow: visible;
 }
 
 .bottom-tab.active {
